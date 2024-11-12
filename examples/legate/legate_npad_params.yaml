@@ -1,0 +1,23 @@
+# Benchmarking parameters
+# This changes how many times the benchmark is run,
+# and what the statistics are like.
+benchmarking_parameters:
+  # Number of rounds to run the benchmark
+  test_rounds: 5
+  # Number of iterations per round
+  test_iter: 1
+  # Number of warmup rounds
+  test_warmup_rounds: 2
+
+# Global parameters
+global_parameters:
+  # The chain size is the number of Duffing oscillators in the chain.
+  # Change these global parameters to examine scaling of the benchmark.
+  ########################################################################
+  # This parameter affects both the size of the matrices and the number of
+  # rotations performed.
+  global_chain_size: 6
+  # The truncation level for the Duffing oscillators.
+  # Only affects the size of the system.
+  global_ntrunc: 3
+  # Each matrix has a size of (global_ntrunc) ** (2*global_chain_size).

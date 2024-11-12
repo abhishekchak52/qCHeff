@@ -1,0 +1,40 @@
+# Benchmarking parameters
+# This changes how many times the benchmark is run,
+# and what the statistics are like.
+benchmarking_parameters:
+  # Number of rounds to run the benchmark
+  test_rounds: 5
+  # Number of iterations per round
+  test_iter: 1
+  # Number of warmup rounds
+  test_warmup_rounds: 2
+
+# Global parameters
+# These parameters DO change the size of the system.
+# The chain size is the number of qubits in the chain
+# matrices will be of the size 2**(2*chain_size)
+global_parameters:
+  # this scales the size of the chain.
+  global_chain_size: 6
+  # This changes the duration of the pulse. Does not affect the size of the system.
+  # However, longer gate times will require more intervals to converge accurately.
+  # You may not need to change this parameter.
+  global_test_gate_time: 20
+  # This changes the number of points in the time list.
+  # This will also affect the accuracy of the Magnus expansion.
+  # Directly affects the size of the time array in memory.
+  # This array will typically not be large enough to fill GPU memory.
+  # This needs to always be greater than the number of magnus intervals, 
+  # and the number of points in the time list should be a multiple of the number of magnus intervals.
+  # Change this parameter to increase the number of Magnus intervals used in the benchmark.
+  global_test_num_tlist: 10000
+  # This is a list of number of Magnus intervals to see scaling. 
+  # This should be less than global_test_num_tlist.
+  # This will affect the size of the full Magnus array in memory.
+  # Size is expected to be 2**(2*chain_size)*num_intervals which will be passed to expm.
+  # This parameter and the one above are the most important for scaling.
+  global_num_interval_list:
+    - 10
+    - 20
+    - 50
+    - 100
