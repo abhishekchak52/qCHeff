@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT
 
+# The following function names: eye_like, commutator, tensor, are essential quantum operations with definitions that
+# follow from the literature. While, for user readability and adaptability, we have used the same namespace
+# as QuTip with these functions, the code within is distinct in all cases, save when the operation is so simple and
+# universally defined mathematically that alternative syntax is impractical. 
+
 import itertools
 from functools import reduce
 
