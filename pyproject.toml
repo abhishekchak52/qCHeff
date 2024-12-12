@@ -22,13 +22,13 @@ classifiers = [
 dependencies = [
   "more-itertools>=10.4.0",
   "numpy>=2.0.0",
-  "scipy>=1.14",
+  "scipy>=1.13",
 ]
 
 [project.optional-dependencies]
 models = [
     "qutip>=5.0.3.post1",
-    "scqubits",
+    "scqubits>=4.2",
 ]
 plot = [
     "matplotlib>=3.9.2",
@@ -55,9 +55,6 @@ dev-dependencies = [
     "pytest-sugar>=1.0.0",
     "nvtx>=0.2.10",
 ]
-
-[tool.uv.sources]
-scqubits = { git = "https://github.com/scqubits/scqubits.git" }
 
 [tool.mypy]
 disable_error_code = "import-untyped"
