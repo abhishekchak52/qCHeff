@@ -1247,26 +1247,25 @@ dependencies = [
     { name = "scipy", version = "1.16.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'darwin'" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 cupy-cuda11x = [
     { name = "cupy-cuda11x" },
 ]
 cupy-cuda12x = [
     { name = "cupy-cuda12x" },
 ]
+models = [
+    { name = "qutip" },
+    { name = "scqubits" },
+]
+
+[package.dev-dependencies]
 docs = [
     { name = "myst-parser" },
     { name = "pydata-sphinx-theme" },
     { name = "sphinx" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc2" },
-]
-models = [
-    { name = "qutip" },
-    { name = "scqubits" },
-]
-plot = [
-    { name = "matplotlib" },
 ]
 test = [
     { name = "pytest" },
@@ -1280,14 +1279,17 @@ type = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cupy-cuda11x", marker = "extra == 'cupy-cuda11x'", specifier = ">=13.3.0" },
+    { name = "cupy-cuda12x", marker = "extra == 'cupy-cuda12x'", specifier = ">=13.3.0" },
     { name = "more-itertools", specifier = ">=10.4.0" },
     { name = "numpy", specifier = ">=2.0.0" },
+    { name = "qutip", marker = "extra == 'models'", specifier = ">=5.0.3.post1" },
     { name = "scipy", specifier = ">=1.13" },
+    { name = "scqubits", marker = "extra == 'models'", specifier = ">=4.2" },
 ]
+provides-extras = ["models", "cupy-cuda11x", "cupy-cuda12x"]
 
 [package.metadata.requires-dev]
-cupy-cuda11x = [{ name = "cupy-cuda11x", specifier = ">=13.3.0" }]
-cupy-cuda12x = [{ name = "cupy-cuda12x", specifier = ">=13.3.0" }]
 docs = [
     { name = "myst-parser", specifier = ">=4.0.0" },
     { name = "pydata-sphinx-theme", specifier = ">=0.15.4" },
@@ -1295,11 +1297,6 @@ docs = [
     { name = "sphinx-autobuild", specifier = ">=2024.9.3" },
     { name = "sphinx-autodoc2", specifier = ">=0.5.0" },
 ]
-models = [
-    { name = "qutip", specifier = ">=5.0.3.post1" },
-    { name = "scqubits", specifier = ">=4.2" },
-]
-plot = [{ name = "matplotlib", specifier = ">=3.9.2" }]
 test = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-benchmark", specifier = ">=4.0.0" },

@@ -1,11 +1,9 @@
 # User Guide
+```{toctree}
+:maxdepth: 1
 
-```{eval-rst}
-
-.. toctree::
-   :maxdepth: 1
-
-   operators
-   iswt
-   magnus
+theoretical_background
+operators
+iswt
+magnus
 ```

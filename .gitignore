@@ -181,3 +181,8 @@ site/
 **profile*
 **_data.json
 uv.lock
+
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+__marimo__/
