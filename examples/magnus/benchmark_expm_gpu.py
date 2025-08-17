@@ -21,8 +21,7 @@ cp.cuda.Device(1).use()
 
 
 def sync_wrapper(func, *args, **kwargs):
-    """
-    Synchronizes the GPU after running the function.
+    """Synchronizes the GPU after running the function.
     """
     res = func(*args, **kwargs)
     cp.cuda.Device().synchronize()

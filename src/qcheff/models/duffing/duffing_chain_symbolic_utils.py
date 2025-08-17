@@ -12,8 +12,7 @@ def duffing_chain_full_ham(
     example: UniformlyCoupledDuffingChain,
     return_subs: bool = False,
 ):
-    """
-    Hamiltonian in full Hilbert space for a Duffing Oscillator chain.
+    """Hamiltonian in full Hilbert space for a Duffing Oscillator chain.
 
     example: DuffingChain
     The example system
@@ -28,8 +27,8 @@ def duffing_chain_full_ham(
 
     ntrunc = example.ntrunc
     nsystems = len(example.qubits)
-    freqs_sym = sympy.symbols(f"omega1:{nsystems+1}", positive=True)
-    alphas_sym = sympy.symbols(f"alpha1:{nsystems+1}", real=True)
+    freqs_sym = sympy.symbols(f"omega1:{nsystems + 1}", positive=True)
+    alphas_sym = sympy.symbols(f"alpha1:{nsystems + 1}", real=True)
     g = sympy.symbols("g", positive=True)
 
     param_sub_vals = (

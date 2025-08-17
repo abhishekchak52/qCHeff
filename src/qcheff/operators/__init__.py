@@ -11,8 +11,7 @@ from qcheff.operators.utils import *  # noqa: F403
 
 
 def qcheffOperator(op: qcheff_array) -> OperatorMatrix:
-    """
-    Create an OperatorMatrix object from a given operator.
+    """Create an OperatorMatrix object from a given operator.
 
     Parameters
     ----------
@@ -23,6 +22,7 @@ def qcheffOperator(op: qcheff_array) -> OperatorMatrix:
     -------
     OperatorMatrix
         The created OperatorMatrix object.
+
     """
     if isinstance(op, qcheff_sparse_array):
         return SparseOperator(op)

@@ -2,15 +2,13 @@ import importlib
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from types import ModuleType
-from typing import Type
 
 __all__ = ["qcheff_config"]
 
 
 @dataclass(kw_only=True)
 class _QCHeffConfig:
-    """
-    Default configuration for qcheff package.
+    """Default configuration for qcheff package.
     Not meant to be instantiated by the user.
 
     Instead, use the `qcheff_config` instance provided in this module.
@@ -94,9 +92,7 @@ qcheff_config = _QCHeffConfig()
 
 @contextmanager
 def temp_config(**kwargs):
-    """
-    Temporarily change settings on the qcheff_config object.
-    """
+    """Temporarily change settings on the qcheff_config object."""
     backup_values = {key: getattr(qcheff_config, key) for key in kwargs}
     qcheff_config.set(**kwargs)
     try:

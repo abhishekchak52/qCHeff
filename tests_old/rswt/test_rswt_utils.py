@@ -11,8 +11,7 @@ dim_list = list(numpy.geomspace(20, 100, 5, dtype="int"))
 
 @pytest.mark.parametrize("dim", dim_list)
 def test_matrix_split_returns_diag(dim: int):
-    """
-    Test that the split gives the correct diag matrix.
+    """Test that the split gives the correct diag matrix.
     """
     M = cp.asarray(qt.rand_herm(dim)[:])
 
@@ -23,8 +22,7 @@ def test_matrix_split_returns_diag(dim: int):
 
 @pytest.mark.parametrize("dim", dim_list)
 def test_matrix_split_returns_offdiag(dim: int):
-    """
-    Test that the split gives the correct offdiag matrix.
+    """Test that the split gives the correct offdiag matrix.
     """
     M = cp.asarray(qt.rand_herm(dim)[:])
 

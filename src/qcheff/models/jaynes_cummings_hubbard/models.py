@@ -13,11 +13,10 @@ import qcheff.operators.operators as qops
 
 @dataclass
 class JCHModel:
-    """
-    A class to represent a Jaynes-Cummings-Hubbard model.
+    """A class to represent a Jaynes-Cummings-Hubbard model.
 
-    Parameters:
-
+    Parameters
+    ----------
     resonator_freqs : list[float]
         A list of resonator frequencies.
     detunings : list[float]
@@ -43,8 +42,10 @@ class JCHModel:
 
     def __post_init__(self):
         if len(self.resonator_freqs) != len(self.detunings):
-            msg = f"The number of resonator frequencies ({len(self.resonator_freqs)})and\
+            msg = (
+                f"The number of resonator frequencies ({len(self.resonator_freqs)})and\
                   detunings ({len(self.detunings)}) must be the same."
+            )
             raise ValueError(msg)
         self.n = len(self.resonator_freqs)
         # If only one value is given, repeat it for all
@@ -54,8 +55,7 @@ class JCHModel:
             self.detunings = [self.detunings[0]] * self.n
 
     def jch_hamiltonian(self):
-        """
-        Returns the Hamiltonian of a Jaynes-Cummings-Hubbard model.
+        """Returns the Hamiltonian of a Jaynes-Cummings-Hubbard model.
         The tensor structure is {qubits, resonators}.
 
 
@@ -68,11 +68,11 @@ class JCHModel:
         pass
 
     def jch_scqubits_hilbertspace(self):
-        """
-        Returns the SCQubits Hilbertspace of a Jaynes-Cummings-Hubbard
+        """Returns the SCQubits Hilbertspace of a Jaynes-Cummings-Hubbard
         model with a single qubit and a resonator.
 
-        scQubits currently only produces dense matrices, so this should not be used to scale.
+        scQubits currently only produces dense matrices,
+        so this should not be used to scale.
 
         """
         resonators = [

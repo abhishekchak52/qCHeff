@@ -27,12 +27,10 @@ def create_bench_df(bench_results, method_name: str, **kwargs):
 
 
 def bench_magnus(**kwargs):
-    """
-    Main benchmark function for Magnus. This function will run benchmarks for the given
-     configuration.
+    """Main benchmark function for Magnus. This function will run benchmarks for the given
+    configuration.
 
     """
-
     chain_size_list = kwargs.get("chain_size_list", [3])
     n_repeat = kwargs.get("n_repeat", 10)
     n_warmup = kwargs.get("n_warmup", 5)

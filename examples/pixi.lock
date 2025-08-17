@@ -1510,8 +1510,8 @@ packages:
   requires_python: '>=3.8'
 - pypi: ..
   name: qcheff
-  version: 0.2.0
-  sha256: 8b107bbef9a8ecc1003857101c3a9e1ae0acd004a1ab1923356d1a308445d8ff
+  version: 0.2.0.post1
+  sha256: cae352ab57ab990aca40a2e7c8392dabbfd9495ac70b6c42b325b8b1d8d9635c
   requires_dist:
   - more-itertools>=10.4.0
   - numpy>=2.0.0

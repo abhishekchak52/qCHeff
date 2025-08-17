@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT
 
-# The following function names: eye_like, commutator, tensor, are essential quantum operations with definitions that
-# follow from the literature. While, for user readability and adaptability, we have used the same namespace
-# as QuTip with these functions, the code within is distinct in all cases, save when the operation is so simple and
-# universally defined mathematically that alternative syntax is impractical. 
+# The following function names: eye_like, commutator, tensor, are essential quantum
+# operations with definitions that follow from the literature. While, for user
+# readability and adaptability, we have used the same namespace as QuTip with these
+# functions, the code within is distinct in all cases, save when the operation is
+# so simple and universally defined mathematically that alternative syntax
+# is impractical.
 
 import itertools
 from functools import reduce
@@ -17,8 +19,7 @@ from qcheff import qcheff_config
 
 
 def eye_like(A):
-    """
-    Identity operator in sparse format with the same shape as A.
+    """Identity operator in sparse format with the same shape as A.
 
     Parameters
     ----------
@@ -29,6 +30,7 @@ def eye_like(A):
     -------
     identity_operator : array_like
         Identity operator in sparse format with the same shape as A
+
     """
     xp = cupyx.scipy.get_array_module(A)
 
@@ -41,8 +43,7 @@ def eye_like(A):
 
 
 def commutator(A, B, kind="normal"):
-    """
-    Commutator of two operators.
+    """Commutator of two operators.
 
     Parameters
     ----------
@@ -57,6 +58,7 @@ def commutator(A, B, kind="normal"):
     -------
     commutator : array_like
         Commutator of two operators
+
     """
     if kind == "normal":
         return A @ B - B @ A
@@ -70,8 +72,7 @@ def commutator(A, B, kind="normal"):
 
 
 def tensor2(A, B):
-    """
-    Tensor product of two operators.
+    """Tensor product of two operators.
 
     Parameters
     ----------
@@ -84,6 +85,7 @@ def tensor2(A, B):
     -------
     tensor_product : array_like
         Tensor product of two operators
+
     """
     xpsparse = qcheff_config._device_scipy_backend.sparse
 
@@ -94,8 +96,7 @@ def tensor2(A, B):
 
 
 def tensor(*args):
-    """
-    Tensor product of multiple operators.
+    """Tensor product of multiple operators.
 
     Parameters
     ----------
@@ -106,6 +107,7 @@ def tensor(*args):
     -------
     tensor_product : array_like
         Tensor product of multiple operators
+
     """
     return reduce(tensor2, args)
 
@@ -115,8 +117,7 @@ def embed_operator(
     pos: int,
     system_dims: tuple[int, ...],
 ):
-    """
-    Identity wrapping for the appropriate operator.
+    """Identity wrapping for the appropriate operator.
 
     Parameters
     ----------
@@ -131,6 +132,7 @@ def embed_operator(
     -------
     wrapped_operator : array_like
         The wrapped operator
+
     """
     # Fully tensored identity in the Full Hilbert Space.
     wrapped_op = [
@@ -143,8 +145,7 @@ def embed_operator(
 # system composition API in QuTiP.
 # Source: https://github.com/qutip/qutip/blob/master/qutip/core/states.py
 def state_number_enumerate(dims, excitations=None):  # pragma: no cover
-    """
-    An iterator that enumerates all the state number tuples (quantum numbers of
+    """An iterator that enumerates all the state number tuples (quantum numbers of
     the form (n1, n2, n3, ...)) for a system with dimensions given by dims.
 
     Example:
@@ -172,7 +173,6 @@ def state_number_enumerate(dims, excitations=None):  # pragma: no cover
         iterations, using standard state enumeration *by definition*.
 
     """
-
     if excitations is None:
         # in this case, state numbers are a direct product
         yield from itertools.product(*(range(d) for d in dims))
@@ -201,8 +201,7 @@ def state_number_enumerate(dims, excitations=None):  # pragma: no cover
 
 
 def state_number_index(dims, state):  # pragma: no cover
-    """
-    Return the index of a quantum state corresponding to state,
+    """Return the index of a quantum state corresponding to state,
     given a system with dimensions given by dims.
 
     Example:
@@ -229,8 +228,7 @@ def state_number_index(dims, state):  # pragma: no cover
 
 
 def state_index_number(dims, index):  # pragma: no cover
-    """
-    Return a quantum number representation given a state index, for a system
+    """Return a quantum number representation given a state index, for a system
     of composite structure defined by dims.
 
     Example:

@@ -1,5 +1,4 @@
-"""
-Contains different methods for calculating the relevant energies of a Duffing chain with a ZZ interaction.
+"""Contains different methods for calculating the relevant energies of a Duffing chain with a ZZ interaction.
 
 """
 
@@ -18,8 +17,7 @@ from qcheff.npad.sparse.npad_cpu import npad_diagonalize, npad_diagonalize_subsp
 
 
 def scq_auto_find_evals(level_labels, del1, del2, wr=5, nr=1, debug=False):
-    """
-    Return the desired energies of a Duffing chain using scqubits.
+    """Return the desired energies of a Duffing chain using scqubits.
     The dressed states are calculated numerically and mapped to the bare states using scqubits automatically.
     """
     test_hs = duffing_chain_scq_hilbertspace(
@@ -36,8 +34,7 @@ def scq_auto_find_evals(level_labels, del1, del2, wr=5, nr=1, debug=False):
 
 
 def scq_overlap_find_evals(level_labels, del1, del2, wr=5, nr=1, debug=False):
-    """
-    Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using the scqubits.
+    """Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using the scqubits.
     The dressed states are calculated numerically and mapped to the bare states using an overlap matrix manually.
     """
     test_hs = duffing_chain_scq_hilbertspace(
@@ -62,8 +59,7 @@ def scq_overlap_find_evals(level_labels, del1, del2, wr=5, nr=1, debug=False):
 
 
 def qutip_overlap_find_evals(level_labels, del1, del2, wr=5, nr=1, debug=False):
-    """
-    Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using qutip.
+    """Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using qutip.
     The dressed states are calculated numerically and mapped to the bare states using an overlap matrix manually.
     """
     test_ham = duffing_chain_qutip_ham(
@@ -88,8 +84,7 @@ def qutip_overlap_find_evals(level_labels, del1, del2, wr=5, nr=1, debug=False):
 
 
 def npad_auto_find_evals(level_labels, del1, del2, wr=5, nr=1, eps=1e-12, debug=False):
-    """
-    Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using NPAD.
+    """Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using NPAD.
     NPAD preserves state labels, so we don't need to compute overlaps.
     """
     test_ham = duffing_chain_num_ham(
@@ -117,8 +112,7 @@ def npad_auto_find_evals(level_labels, del1, del2, wr=5, nr=1, eps=1e-12, debug=
 
 
 def npad_diag_find_evals(level_labels, del1, del2, wr=5, nr=1, eps=1e-12, debug=False):
-    """
-    Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using NPAD.
+    """Return the energies of the four lowest energy states of a Duffing chain with a ZZ interaction using NPAD.
     NPAD preserves state labels, so we don't need to compute overlaps.
     """
     test_ham = duffing_chain_num_ham(

@@ -20,7 +20,8 @@ from qcheff.operators.operator_base import qcheffOperator
 @dataclass
 class JCHAnalysis:
     """
-    NamedTuple containing the Jaynes-Cummings-Hubbard model and the desired level labels.
+    Effectively a NamedTuple containing the Jaynes-Cummings-Hubbard model
+    and the desired level labels.
     """
 
     model: JCHModel
@@ -29,18 +30,14 @@ class JCHAnalysis:
     system_dims: list = field(init=False)
 
     def __post_init__(self):
-        """
-        Initializes the level indices for the Jaynes-Cummings model.
-        """
+        """Initializes the level indices for the Jaynes-Cummings model."""
         self.system_dims = [2] * self.model.n + [self.model.nr] * self.model.n
         self.level_idx = np.asarray(
             [qt.state_number_index(self.system_dims, x) for x in self.level_labels]
         )
 
     def analyse(self, methods=None, **kwargs):
-        """
-        Analyzes the Jaynes-Cummings model and returns the eigenvalues of the system.
-        """
+        """Analyzes the JC model and returns the eigenvalues of the system."""
         if methods is None:
             methods = ["scqubits", "npad_cpu", "npad_gpu"]
         if "scqubits" in methods:
@@ -51,12 +48,10 @@ class JCHAnalysis:
             yield self.npad_gpu_eigvals(**kwargs)
 
     def scqubits_eigvals(self):
-        """
-        Returns the desired eigenvalues of a Jaynes-Cummings model using SCQubits.
+        """Returns the desired eigenvalues of a Jaynes-Cummings model using SCQubits.
 
         Energies are returned as a Polars series.
         """
-
         return self.generate_df(
             evals_list=map(
                 jch_scqubits_hilbertspace(model=self.model).energy_by_bare_index,
@@ -66,12 +61,10 @@ class JCHAnalysis:
         )
 
     def npad_cpu_eigvals(self, batch_size=1, tol=1e-12, max_iter=3):
-        """
-        Returns the desired eigenvalues of a Jaynes-Cummings model using NPAD.
+        """Returns the desired eigenvalues of a Jaynes-Cummings model using NPAD.
 
         Energies are returned as an array of floats.
         """
-
         test_NPAD = NPAD(
             qcheffOperator(
                 spsparse.csr_array(
@@ -103,8 +96,7 @@ class JCHAnalysis:
         )
 
     def npad_gpu_eigvals(self, batch_size=1, tol=1e-12, max_iter=3):
-        """
-        Returns the desired eigenvalues of a Jaynes-Cummings model using NPAD.
+        """Returns the desired eigenvalues of a Jaynes-Cummings model using NPAD.
 
         Energies are returned as an array of floats.
         """
@@ -141,9 +133,7 @@ class JCHAnalysis:
         )
 
     def generate_df(self, evals_list, method_name, params=None):
-        """
-        Generates a DataFrame with the eigenvalues of the Jaynes-Cummings model.
-        """
+        """Generates a DataFrame with the eigenvalues of the Jaynes-Cummings model."""
         if params is None:
             params = ["delta", "g", "kappa"]
         return pl.DataFrame(

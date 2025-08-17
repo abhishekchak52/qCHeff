@@ -15,8 +15,7 @@ from qcheff.operators import embed_operator
 
 @dataclass(frozen=True)
 class DuffingChain:
-    """
-    Implements a linear chain of N Duffing Oscillator qubits.
+    """Implements a linear chain of N Duffing Oscillator qubits.
     This simple example assumes the qubits are all coupled to their nearest neighbors
     with the different coupling strenghs g.
 
@@ -33,13 +32,13 @@ def create_duffing_chain_system(
     couplings,
     ntrunc: int = 3,
 ):
-    """
-    Factory function for dduffing chain
-    """
+    """Factory function for Duffing chain"""
     if len(omegas) != len(alphas) or len(omegas) != len(couplings) + 1:
-        raise ValueError(
-            "The number of qubit freqs should be equal to the number of anharmonicities and one less than the number of couplings"
+        err_msg = (
+            "The number of qubit freqs should be equal to the number of "
+            "anharmonicities and one less than the number of couplings"
         )
+        raise ValueError(err_msg)
     DuffingQubits_list = [
         DuffingOscQubit(omega=w, alpha=a, ntrunc=ntrunc)
         for w, a in zip(omegas, alphas, strict=True)
@@ -60,10 +59,9 @@ def create_linear_spectrum_zz_chain(
     ntrunc: int = 3,
     debug: bool = False,
 ) -> DuffingChain:
-    """
-    Creates a linear chain of Duffing Oscillators. The ends have anharmonicity alpha, modeling transmons.
-    The remaining are linear resonators, with their frequencies distributed in a V shape.
-
+    """Creates a linear chain of Duffing Oscillators. The ends have anharmonicity
+    alpha, modeling transmons. The remaining are linear resonators, with their
+    frequencies distributed in a V shape.
     """
     if num_resonators % 2 == 0 or num_resonators < 1:
         raise ValueError("The chain size should be a positive odd number.")
@@ -87,8 +85,7 @@ def create_linear_spectrum_zz_chain(
 def duffing_chain_num_ham(
     example: DuffingChain,
 ):
-    """
-    Numerical Hamiltonian in full Hilbert space for a Duffing Oscillator chain.
+    """Numerical Hamiltonian in full Hilbert space for a Duffing Oscillator chain.
 
     example: DuffingChain
     The example system
@@ -138,8 +135,7 @@ def duffing_chain_num_ham(
 def duffing_chain_qutip_ham(
     example: DuffingChain,
 ):
-    """
-    Numerical Hamiltonian in full Hilbert space for a Duffing Oscillator chain.
+    """Numerical Hamiltonian in full Hilbert space for a Duffing Oscillator chain.
 
     example: DuffingChain
     The example system
@@ -190,12 +186,11 @@ def duffing_chain_qutip_ham(
 def duffing_chain_scq_hilbertspace(
     example: DuffingChain,
 ):
-    """
-    SCQubits Hamiltonian for a Duffing Oscillator chain.
+    """SCQubits Hamiltonian for a Duffing Oscillator chain.
 
-    Since SCQubits comes with a Kerr oscillator class, we can use it to define the qubits.
-    However, the Kerr oscillator Hamiltonina has different constants, so we need to adjust the sign of the anharmonicity
-    and divide by 2.
+    Since SCQubits comes with a Kerr oscillator class, we can use it to
+    define the qubits. However, the Kerr oscillator Hamiltonian has different
+    constants, so we need to adjust the sign of the anharmonicity and divide by 2.
 
     """
     freqs_num = [qubit.omega for qubit in example.qubits]

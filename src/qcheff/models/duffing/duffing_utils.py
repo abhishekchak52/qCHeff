@@ -47,9 +47,7 @@ def create_system_NPAD(
     alpha2: float = -0.3,  # GHz
     g: float = 0.1,  # GHz
 ) -> CoupledDuffingOsc:
-    """
-    Given a detuning, creates some sensible default parameters.
-    """
+    """Given a detuning, creates some sensible default parameters."""
     w2 = 5  # GHz #probably a sensible value for a transmon
     w1 = w2 + detuning
 
@@ -61,7 +59,5 @@ def create_system_NPAD(
 
 
 def qutip2sympy(op: qt.Qobj):
-    """
-    This function converts QuTiP operators into SymPy matrices.
-    """
+    """This function converts QuTiP operators into SymPy matrices."""
     return sympy.Matrix(sympy.sympify(op[:]).applyfunc(sympy.nsimplify))

@@ -23,10 +23,7 @@ from qcheff.operators import (
 
 @dataclass
 class ExactIterativeSWT:
-    """
-    Interface for the state machine encoding the iterative SWT algorithm.
-
-    """
+    """Interface for the state machine encoding the iterative SWT algorithm."""
 
     H: OperatorMatrix
     givens_sparse_backend_: ModuleType | None = None
@@ -42,8 +39,7 @@ class ExactIterativeSWT:
 
     @abstractmethod
     def givens_rotation_matrix(self, i: int, j: int) -> qcheff_sparse_array:
-        """
-        Returns a sparse Givens rotation matrix for the coupling (i,j).
+        """Returns a sparse Givens rotation matrix for the coupling (i,j).
 
         Parameters
         ----------
@@ -56,27 +52,28 @@ class ExactIterativeSWT:
         -------
         qcheff_sparse_array
             The sparse Givens rotation matrix.
+
         """
 
     def unitary_transformation(self, U: qcheff_array) -> None:
-        """
-        Apply a unitary transformation U to the Hamiltonian.
+        """Apply a unitary transformation U to the Hamiltonian.
 
         Parameters
         ----------
         U : qcheff_array
             The unitary transformation matrix.
+
         """
         self.H.op = U @ self.H.op @ U.conj().T
 
     def eliminate_couplings(self, couplings: qcheff_dense_array) -> None:
-        """
-        Eliminate the coupling between levels i and j using a Givens Rotation.
+        """Eliminate the coupling between levels i and j using a Givens Rotation.
 
         Parameters
         ----------
         couplings : qcheff_dense_array
             The array of couplings to eliminate.
+
         """
         Ul = eye_like(self.H.op)
         for i, j in couplings:
@@ -85,8 +82,7 @@ class ExactIterativeSWT:
         self.unitary_transformation(U=Ul)
 
     def eliminate_coupling(self, i: int, j: int) -> None:
-        """
-        Eliminate the coupling between levels i and j using a Givens Rotation.
+        """Eliminate the coupling between levels i and j using a Givens Rotation.
 
         Parameters
         ----------
@@ -94,12 +90,12 @@ class ExactIterativeSWT:
             The first index of the coupling.
         j : int
             The second index of the coupling.
+
         """
         self.unitary_transformation(U=self.givens_rotation_matrix(i, j))
 
     def largest_couplings(self, n: int = 1):
-        """
-        Mark the largest coupling in the Hamiltonian.
+        """Mark the largest coupling in the Hamiltonian.
 
         Parameters
         ----------
@@ -110,10 +106,12 @@ class ExactIterativeSWT:
         -------
         tuple
             The indices (i,j) of the largest coupling in the Hamiltonian.
+
         """
+
+
 class NPADScipySparse(ExactIterativeSWT):
-    """
-    NPAD algorithm implemented with SciPy sparse matrices.
+    """NPAD algorithm implemented with SciPy sparse matrices.
 
     Parameters
     ----------
@@ -131,11 +129,11 @@ class NPADScipySparse(ExactIterativeSWT):
         Returns a sparse Givens rotation matrix for the coupling (i,j).
     largest_couplings(n=1, levels=None)
         Mark the largest coupling in the Hamiltonian.
+
     """
 
     def givens_rotation_matrix(self, i: int, j: int) -> qcheff_sparse_array:
-        """
-        Returns a sparse Givens rotation matrix for the coupling (i,j).
+        """Returns a sparse Givens rotation matrix for the coupling (i,j).
 
         Parameters
         ----------
@@ -148,6 +146,7 @@ class NPADScipySparse(ExactIterativeSWT):
         -------
         qcheff_sparse_array
             The sparse Givens rotation matrix.
+
         """
         _H = self.H.op
         dim = _H.shape[0]
@@ -186,8 +185,7 @@ class NPADScipySparse(ExactIterativeSWT):
         )
 
     def largest_couplings(self, n: int = 1, levels=None):
-        """
-        Mark the largest coupling in the Hamiltonian.
+        """Mark the largest coupling in the Hamiltonian.
 
         Parameters
         ----------
@@ -201,6 +199,7 @@ class NPADScipySparse(ExactIterativeSWT):
         tuple
             A tuple containing the indices (i,j) of the largest coupling and the
             Hamiltonian.
+
         """
         while True:
             coo_op = self.H.couplings().tocoo()
@@ -223,8 +222,7 @@ class NPADScipySparse(ExactIterativeSWT):
 
 
 class NPADCupySparse(ExactIterativeSWT):
-    """
-    NPAD algorithm implemented with CuPy sparse matrices.
+    """NPAD algorithm implemented with CuPy sparse matrices.
 
     Parameters
     ----------
@@ -242,11 +240,11 @@ class NPADCupySparse(ExactIterativeSWT):
         Returns a sparse Givens rotation matrix for the coupling (i,j).
     largest_couplings(n=1, levels=None)
         Mark the largest coupling in the Hamiltonian.
+
     """
 
     def givens_rotation_matrix(self, i: int, j: int) -> qcheff_sparse_array:
-        """
-        Returns a sparse Givens rotation matrix for the coupling (i,j).
+        """Returns a sparse Givens rotation matrix for the coupling (i,j).
 
         Parameters
         ----------
@@ -259,6 +257,7 @@ class NPADCupySparse(ExactIterativeSWT):
         -------
         qcheff_sparse_array
             The sparse Givens rotation matrix.
+
         """
         _H = self.H.op
         dim = _H.shape[0]
@@ -297,8 +296,7 @@ class NPADCupySparse(ExactIterativeSWT):
         )
 
     def largest_couplings(self, n: int = 1, levels=None):
-        """
-        Mark the largest coupling in the Hamiltonian.
+        """Mark the largest coupling in the Hamiltonian.
 
         Parameters
         ----------
@@ -312,6 +310,7 @@ class NPADCupySparse(ExactIterativeSWT):
         tuple
             A tuple containing the indices (i,j) of the largest coupling and the
             Hamiltonian.
+
         """
         while True:
             coo_op = self.H.couplings().tocoo()

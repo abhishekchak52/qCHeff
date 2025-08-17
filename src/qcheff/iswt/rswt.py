@@ -11,8 +11,7 @@ import scipy.linalg as la
 
 
 def rswt_nested_commutator(A: np.ndarray, B: np.ndarray, order: int):
-    """
-    Return the nested commutator (Eq. 18)
+    """Return the nested commutator (Eq. 18)
     C_(l)(A, B) = [A, C_{l-1}(A, B)]
 
     """
@@ -28,10 +27,7 @@ def rswt_nested_commutator(A: np.ndarray, B: np.ndarray, order: int):
 
 
 def rswt_create_generator(D: np.ndarray, V: np.ndarray):
-    """
-    Create the generator from the Hamiltonian.
-    """
-
+    """Create the generator from the Hamiltonian."""
     assert D.shape == V.shape, "D and V must have the same shape."
 
     dim = D.shape[0]
@@ -47,12 +43,10 @@ def rswt_create_generator(D: np.ndarray, V: np.ndarray):
 
 
 def rswt_step(H: np.ndarray, order: int, n: int):
-    """
-    Do a single step of RSWT.
+    """Do a single step of RSWT.
 
     order = K
     """
-
     m = np.floor(order / np.exp2(n))
     # Replace later.
     D, V = None  # split_diag_offdiag_matrix(H)
@@ -68,10 +62,7 @@ def rswt_step(H: np.ndarray, order: int, n: int):
 
 
 def rswt(H: np.ndarray, order: int):
-    """
-    Order = K
-    """
-
+    """Order = K"""
     nmax = np.floor(np.log2(order))
 
     for n in range(nmax):

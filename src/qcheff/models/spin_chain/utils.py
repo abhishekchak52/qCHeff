@@ -19,8 +19,7 @@ from qcheff.utils.system import QuTiPSystem
 
 @dataclass(frozen=True)
 class DegenerateSpinChain:
-    """
-    Describes a degenerate spin chain of size N. All qubits have the same
+    """Describes a degenerate spin chain of size N. All qubits have the same
     frequency = 1 with nearest ne ighbor coupling strength J (in units of
     frequency) and next-nearest neighbor coupling strength g (in units of
     frequency).
@@ -32,8 +31,7 @@ class DegenerateSpinChain:
 
 
 def create_degen_chain(N: int = 3, J: float = 5e-2, g: float = 5e-3):
-    """
-    Creates a spin chain with given parameters.
+    """Creates a spin chain with given parameters.
 
     N: int, default 3
     size of chain
@@ -49,8 +47,7 @@ def create_degen_chain(N: int = 3, J: float = 5e-2, g: float = 5e-3):
 
 
 def embed_operator(op: qt.Qobj, pos: int, ntrunc: int, nsystems: int):
-    """
-    Identity wrapping for the appropriate operator
+    """Identity wrapping for the appropriate operator
 
     op: qt.Qobj
     The operator to be wrapped. Ideally, it should have dimensions=ntrunc
@@ -66,15 +63,13 @@ def embed_operator(op: qt.Qobj, pos: int, ntrunc: int, nsystems: int):
     Should be larger than pos.
 
     """
-
     # Fully tensored identity in the Full Hilbert Space.
     wrapped_op = [op if idx == pos else qt.qeye(ntrunc) for idx in range(nsystems)]
     return qt.tensor(wrapped_op)
 
 
 def QuTiP_level_labels(chain: DegenerateSpinChain):
-    """
-    Returns strings showing labels for each level in the
+    """Returns strings showing labels for each level in the
     preferred ordering in QuTiP.
     """
     N = chain.chain_size
@@ -87,8 +82,7 @@ def QuTiP_level_labels(chain: DegenerateSpinChain):
 
 
 def QuTiP_drift_ham_degen_chain(chain: DegenerateSpinChain):
-    """
-    Creates a QuTiP drift Hamiltonian given a chain.
+    """Creates a QuTiP drift Hamiltonian given a chain.
     Energies are measured in units of omega.
     """
     N = chain.chain_size  # number of spins
@@ -110,16 +104,12 @@ def QuTiP_drift_ham_degen_chain(chain: DegenerateSpinChain):
 
 
 def QuTiP_chain_prodstate(chain_size: int, state_label: tuple[int, ...]):
-    """
-    Returns an initial state of the given label for a product state.
-    """
+    """Returns an initial state of the given label for a product state."""
     return qt.basis(dims=[2] * chain_size, n=state_label)
 
 
 def QuTiP_chain_prodstate_index(chain_size: int, state_index: int):
-    """
-    Returns an initial state of the given label for a product state.
-    """
+    """Returns an initial state of the given label for a product state."""
     return qt.basis(
         dims=[2] * chain_size,
         n=list(qt.state_index_number(dims=[2] * chain_size, index=state_index)),
@@ -132,8 +122,7 @@ def QuTiP_total_ham_degen_chain(
     xdrive: np.ndarray,
     ydrive: np.ndarray,
 ):
-    """
-    Creates a QuTiP total driven Hamiltonian given a chain.
+    """Creates a QuTiP total driven Hamiltonian given a chain.
     Energies are measured in units of omega.
     Times are measured in units of pi/omega.
 
@@ -169,10 +158,7 @@ def simulate_chain_dynamics(
     psi0: qt.Qobj,
     plot=None,
 ):
-    """
-    Simulates the dynamics of the chain and plots Pauli operator expectation values
-    """
-
+    """Simulates chain dynamics and plots Pauli operator expectation values."""
     result = qt.sesolve(
         Hsim, psi0, tlist, options={"progress_bar": False, "method": "vern9"}
     )
@@ -282,7 +268,7 @@ def setup_magnus_chain_example(
     )
     Hneigbors = H_nn + H_nnn
     # Create the drift Hamiltonian
-    Hdrift =  Hneigbors
+    Hdrift = Hneigbors
     # Create the control Hamiltonian
     Hcontrol = [sum(sx_ops), sum(sy_ops)]
 

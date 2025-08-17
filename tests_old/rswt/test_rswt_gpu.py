@@ -11,10 +11,8 @@ dim_list = np.geomspace(2, 100, 5, dtype="int")
 
 @pytest.mark.parametrize("dim", dim_list)
 def test_nested_commutator_base_case(dim: int):
+    """Test the base case for nested commutator.
     """
-    Test the base case for nested commutator.
-    """
-
     M1 = qt.rand_herm(dim)[:]
     M2 = qt.rand_herm(dim)[:]
 
@@ -25,10 +23,8 @@ def test_nested_commutator_base_case(dim: int):
 
 @pytest.mark.parametrize("dim", dim_list)
 def test_nested_commutator_order_recurrence(dim: int):
+    """Test that the recurrence relation is accurate.
     """
-    Test that the recurrence relation is accurate.
-    """
-
     M1 = qt.rand_herm(dim)[:]
     M2 = qt.rand_herm(dim)[:]
 

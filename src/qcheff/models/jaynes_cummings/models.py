@@ -11,9 +11,7 @@ import scqubits as scq
 
 @dataclass
 class JCModel:
-    """
-    Everything is measured in units of the coupling constant g.
-    """
+    """Everything is measured in units of the coupling constant g."""
 
     resonator_freq: np.float64 = 5
     detuning: np.float64 = 0.1
@@ -22,8 +20,7 @@ class JCModel:
     def jc_scqubits_hilbertspace(
         self,
     ):
-        """
-        Returns the SCQubits Hilbertspace of a Jaynes-Cummings model
+        """Returns the SCQubits Hilbertspace of a Jaynes-Cummings model
         with a single qubit and a resonator.
 
         """

@@ -38,12 +38,10 @@ def gen_decouple_data_warmup(chain_size):
 @pytest.mark.skip("Slow for large matrices.")
 @pytest.mark.parametrize("chain_size", chain_size_list)
 def test_npad_decouple_cpu(benchmark, chain_size):
-    """
-    Sets up a chain of Duffing Oscillators, and then decouples the qubit chain subspace.
+    """Sets up a chain of Duffing Oscillators, and then decouples the qubit chain subspace.
 
 
     """
-
     data_ham, incl_idx, excl_idx = gen_decouple_data_warmup(chain_size)
 
     kwarg_dict = {
@@ -71,14 +69,12 @@ def test_npad_decouple_cpu(benchmark, chain_size):
 @pytest.mark.parametrize("chain_size", chain_size_list)
 @pytest.mark.parametrize("batch_size", batch_size_list)
 def test_npad_decouple_iteration_speed_cpu(benchmark, chain_size, batch_size):
-    """
-    Sets up a chain of Duffing Oscillators, and then performs 10
+    """Sets up a chain of Duffing Oscillators, and then performs 10
     decoupling steps the qubit chain subspace.
     Checking performance v/s batch size
 
 
     """
-
     data_ham, incl_idx, excl_idx = gen_decouple_data_warmup(chain_size)
 
     kwarg_dict = {

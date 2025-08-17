@@ -25,8 +25,7 @@ from qcheff.utils.pulses import ControlPulse
 ############################################################################
 @dataclass(frozen=True)
 class QuTiPSystem:
-    """
-    Basic system description.
+    """Basic system description.
 
     Attributes
     ----------
@@ -39,6 +38,7 @@ class QuTiPSystem:
         Time independent Qobj for the control Hamiltonians.
         These, when multiplied by the control signals, give the time-dependent part of
         the Hamiltonian.
+
     """
 
     drift_ham: qt.Qobj | None
@@ -46,8 +46,7 @@ class QuTiPSystem:
     control_hams: Sequence[qt.Qobj]
 
     def __post_init__(self):
-        """
-        Post-initialization checks for the QuTiPSystem class.
+        """Post-initialization checks for the QuTiPSystem class.
 
         Raises
         ------
@@ -55,6 +54,7 @@ class QuTiPSystem:
             If the lengths of control_sigs and control_hams are not the same.
             If drift_ham is not Hermitian.
             If any of the control_hams are not Hermitian.
+
         """
         if len(self.control_sigs) != len(self.control_hams):
             msg = "The lengths of control_sigs and control_hams must be the same."
@@ -72,8 +72,7 @@ class QuTiPSystem:
                 raise ValueError(msg)
 
     def get_qutip_tdham(self, tlist):
-        """
-        Returns a dict that works with qutip.mesolve.
+        """Returns a dict that works with qutip.mesolve.
         Only written for compatibility with QuTiP.
         This will not be used in Magnus.
 
@@ -86,6 +85,7 @@ class QuTiPSystem:
         -------
         list
             List of Hamiltonians and their corresponding time-dependent coefficients.
+
         """
         ham_t = [self.drift_ham] if self.drift_ham is not None else []
         for sig, ham in zip(self.control_sigs, self.control_hams, strict=True):
@@ -93,8 +93,7 @@ class QuTiPSystem:
         return ham_t
 
     def get_magnus_system(self, tlist, *, device="cpu", sparse: bool = False):
-        """
-        Returns a MagnusTimeEvol object, using the correct backend for CPU/GPU.
+        """Returns a MagnusTimeEvol object, using the correct backend for CPU/GPU.
         The backend is chosen based on the device argument.
         This is used to set up the Magnus time-evolution object.
         Not meant for optimization.
@@ -118,6 +117,7 @@ class QuTiPSystem:
         ValueError
             If sparse is not True or False.
             If device is not 'cpu' or 'gpu'.
+
         """
         if sparse not in [True, False]:
             msg = "sparse must be True or False"
@@ -142,7 +142,9 @@ class QuTiPSystem:
         elif sparse is False:
             operator_type = DenseOperator
             magnus_drift_ham = xp.asarray(self.drift_ham[:])  # type: ignore
-            magnus_control_hams = [DenseOperator(xp.asarray(x[:])) for x in self.control_hams]
+            magnus_control_hams = [
+                DenseOperator(xp.asarray(x[:])) for x in self.control_hams
+            ]
             # if device == "gpu":
             #     magnus_drift_ham = cp.asarray(magnus_drift_ham)
             #     magnus_control_hams = [
@@ -163,8 +165,7 @@ class QuTiPSystem:
         )
 
     def plot_control_signals(self, tlist, axis=None, **kwargs):  # pragma: no cover
-        """
-        Plotting pulses and such.
+        """Plotting pulses and such.
 
         Parameters
         ----------
@@ -176,6 +177,7 @@ class QuTiPSystem:
         Returns
         -------
         None
+
         """
         if axis is None:
             fig, axis = plt.subplots(1, 1, layout="constrained")
