@@ -5,9 +5,9 @@ In the interest of minimal code duplication, {math}`{\rm qCH_{\rm eff}}` defines
 We define an abstract base class 
 
 ```{autodoc2-object} qcheff.operators.operator_base.OperatorMatrix
-    :members:
-    :undoc-members:
-    :show-inheritance:
+render_plugin = "myst"
+no_index = true
+hidden_objects = ["dunder", "private" , "inherited"]
 ```
 
 
@@ -15,10 +15,3 @@ We define an abstract base class
 ## Basic Operators
 
 We have defined some basic operators in `qcheff.operators.operators`. The set of operators is a subset of all the operators in QuTiP.
-
-
-```{autodoc2-object} qcheff.operators.operators
-    :members:
-    :undoc-members:
-    :show-inheritance:
-```

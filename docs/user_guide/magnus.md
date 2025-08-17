@@ -1,12 +1,5 @@
 # Magnus Series-based Time Evolution
 
-```{eval-rst}
-.. automodule:: qcheff.magnus
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-```
-
+Here we discuss the theoretical aspects of Magnus expansions
 
 

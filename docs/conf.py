@@ -30,6 +30,7 @@ autosectionlabel_prefix_document = True
 
 autodoc2_packages = ["../src/qcheff"]
 autodoc2_render_plugin = "myst"
+autodoc2_hidden_objects = ["dunder", "private", "inherited"]
 
 myst_enable_extensions = ["colon_fence"]
 
@@ -40,8 +41,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "pydata_sphinx_theme"
-html_static_path = ["_static"]
+html_theme = "furo"
 
 
 add_module_names = False
