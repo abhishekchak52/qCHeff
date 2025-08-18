@@ -4,11 +4,43 @@ marimo-version: 0.8.11
 width: medium
 ---
 
-```{.python.marimo}
+```python {.marimo name="setup"}
+# Initialization code that runs before all other cells
+import copy
+import itertools
+import functools
+import more_itertools
+
 import marimo as mo
+import numpy as np
+import cupy as cp
+import cupyx
+import cupyx.scipy.sparse as cpsparse
+import scipy.sparse as spsparse
+import polars as pl
+import qutip as qt
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+import seaborn.objects as so
+
+from scipy.optimize import minimize
 ```
 
-```{.python.marimo}
+```python {.marimo}
+from qcheff.operators import DenseOperator, SparseOperator
+from qcheff.models.spin_chain.utils import embed_operator
+from qcheff.utils.system import QuTiPSystem
+from qcheff.utils.pulses import FourierPulse
+
+from qcheff.models.spin_chain.utils import (
+    setup_magnus_chain_example,
+    state_transfer_infidelity,
+)
+```
+
+```python {.marimo hide_code="true"}
 magnus_param_form = mo.ui.batch(
     mo.md(
         r"""
@@ -87,19 +119,12 @@ magnus_param_form = mo.ui.batch(
 magnus_param_form
 ```
 
-```{.python.marimo}
-from qcheff.models.spin_chain.utils import (
-    setup_magnus_chain_example,
-    state_transfer_infidelity,
-)
-```
-
-```{.python.marimo}
+```python {.marimo}
 manual_coeffs = res.x
 # manual_coeffs = np.random.random(size=10)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mo.stop(not magnus_param_form.value, "Submit form to start")
 
 test_system, test_magnus = setup_magnus_chain_example(
@@ -108,7 +133,6 @@ test_system, test_magnus = setup_magnus_chain_example(
         magnus_param_form.value
         | {
             "device": "gpu",
-            "sparse": True,
             "pulse_freq": 0,
         }
     ),
@@ -116,23 +140,34 @@ test_system, test_magnus = setup_magnus_chain_example(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 type(test_magnus)
 ```
 
-```{.python.marimo}
+```python {.marimo hide_code="true"}
 labels = [
     r"$P_{|0^{\otimes n}\rangle}$",
     r"$P_{|1^{\otimes n}\rangle}$",
     r"$P_{\rm rest}$",
 ]
-with sns.plotting_context("paper"):
+with sns.plotting_context("notebook"):
     fig, ax = plt.subplots(2, 1, figsize=(6, 7), layout="constrained", sharex=True)
-    for sig, lc, ls in zip(test_system.control_sigs, ["xkcd:tomato red", "xkcd:pinkish orange"], ["-", "--"]):
-        ax[0].plot(test_magnus.tlist, sig(test_magnus.tlist), label=sig.name, ls=ls, color=lc, lw=3)
+    for sig, lc, ls in zip(
+        test_system.control_sigs,
+        ["xkcd:tomato red", "xkcd:pinkish orange"],
+        ["-", "--"],
+    ):
+        ax[0].plot(
+            test_magnus.tlist,
+            sig(test_magnus.tlist),
+            label=sig.name,
+            ls=ls,
+            color=lc,
+            lw=3,
+        )
         ax[0].set(ylim=(-1, 1))
         ax[0].set_ylabel("Amplitude")
-    
+
     magnus_plots = [
         ax[1].plot(mag_tlist, pop, label=label, lw=2, color=lc, ls=ls)[0]
         for pop, label, lc, ls in zip(
@@ -142,8 +177,7 @@ with sns.plotting_context("paper"):
             ["-", "-.", ":"],
         )
     ]
-    
-    
+
     for pop, label in zip(qutip_pops, labels):
         ax[1].plot(
             test_magnus.tlist,
@@ -154,7 +188,7 @@ with sns.plotting_context("paper"):
             lw=0,
             color="black",
         )
-    
+
     ax[1].set(
         xlim=test_magnus.tlims,
         xlabel="Time (ns)",
@@ -163,7 +197,9 @@ with sns.plotting_context("paper"):
     )
     ax[0].set(ylim=(-0.5, 0.5))
     ax[0].legend(
-        fontsize=12, frameon=False, labels=[r"$u^{(k)}(x)$", r"$u^{(k)}(y)$"]
+        fontsize=12,
+        frameon=False,
+        labels=[r"$u^{(k)}(x)$", r"$u^{(k)}(y)$"],
     )
     patch = plt.Line2D(
         [0],
@@ -183,15 +219,15 @@ with sns.plotting_context("paper"):
         title="Populations",
     )
     infidelity = 1 - qt.expect(P1, test_states[-1])
-    fig.suptitle(f"Chain size: N={chain_size}, Error: { infidelity:.3e}")
+    fig.suptitle(f"Chain size: N={chain_size}, Error: {infidelity:.3e}")
 fig
 ```
 
-```{.python.marimo}
+```python {.marimo}
 chain_size = int(magnus_param_form.value["chain_size"])
 ```
 
-```{.python.marimo}
+```python {.marimo}
 allzero_state = qt.basis(dimensions=[2] * chain_size, n=[0] * chain_size)
 allone_state = qt.basis([2] * chain_size, n=[1] * chain_size)
 
@@ -201,7 +237,7 @@ P_rest = qt.qeye([2] * chain_size) - P0 - P1
 eops = [P0, P1, P_rest]
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_psi0 = np.asarray((allzero_state).unit()[:])
 magnus_states = test_magnus.evolve(
     init_state=test_psi0,
@@ -213,7 +249,7 @@ test_states = [
 ]
 ```
 
-```{.python.marimo}
+```python {.marimo}
 tsmag = test_system.get_magnus_system(
     tlist=test_magnus.tlist,
     device="cpu",
@@ -221,18 +257,18 @@ tsmag = test_system.get_magnus_system(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 pops = [qt.expect(eop, test_states) for eop in eops]
 qutip_pops = [qt.expect(eop, qutip_states) for eop in eops]
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mag_tlist = np.linspace(
     *test_magnus.tlims, magnus_param_form.value["num_magnus_intervals"]
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 qutip_states = qt.sesolve(
     H=test_system.get_qutip_tdham(test_magnus.tlist),
     psi0=allzero_state,
@@ -241,7 +277,7 @@ qutip_states = qt.sesolve(
 ).states
 ```
 
-```{.python.marimo}
+```python {.marimo}
 def func2opt(x, lgm: float = 1e3):
     """
     lgm: lagrange multiplier
@@ -259,18 +295,18 @@ def func2opt(x, lgm: float = 1e3):
     )  # + lgm*np.linalg.norm(x, ord=1)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 rng = np.random.default_rng()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 with mo.status.spinner(title="Optimizing") as _spinner:
     for i in range(10):
         test_x = rng.random(size=10)
 
         def update_spinner(*, intermediate_result):
             _spinner.update(title=f"Optimizing attempt {i}/10:")
-            _spinner.update(subtitle=f"Error = {intermediate_result.fun :.3e}")
+            _spinner.update(subtitle=f"Error = {intermediate_result.fun:.3e}")
 
         res = minimize(
             func2opt,
@@ -289,78 +325,4 @@ with mo.status.spinner(title="Optimizing") as _spinner:
             print("x: ", ", ".join(map(str, res.x)))
             print("Error: ", func2opt(res.x))
             break
-```
-
-```{.python.marimo}
-import cupy as cp
-```
-
-```{.python.marimo}
-import functools
-```
-
-```{.python.marimo}
-from scipy.optimize import minimize
-```
-
-```{.python.marimo}
-from qcheff.operators import SparseOperator
-```
-
-```{.python.marimo}
-import cupyx.scipy.sparse as cpsparse
-```
-
-```{.python.marimo}
-import scipy.sparse as spsparse
-```
-
-```{.python.marimo}
-import numpy as np
-```
-
-```{.python.marimo}
-import matplotlib as mpl
-
-
-from qcheff.utils.system import QuTiPSystem
-
-from qcheff.models.spin_chain.utils import embed_operator
-from qcheff.utils.pulses import FourierPulse
-```
-
-```{.python.marimo}
-import matplotlib.pyplot as plt
-```
-
-```{.python.marimo}
-import polars as pl
-```
-
-```{.python.marimo}
-import qutip as qt
-```
-
-```{.python.marimo}
-import itertools
-```
-
-```{.python.marimo}
-import more_itertools
-```
-
-```{.python.marimo}
-import copy
-```
-
-```{.python.marimo}
-from qcheff.operators import DenseOperator
-```
-
-```{.python.marimo}
-import cupyx
-```
-
-```{.python.marimo}
-import seaborn as sns
 ```

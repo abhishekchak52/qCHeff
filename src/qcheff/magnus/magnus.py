@@ -11,16 +11,16 @@ import numpy as np
 import scipy.linalg as la
 
 from qcheff.magnus.utils_gpu import expm_taylor
-from qcheff.operators import OperatorMatrix, qcheff_array
+from qcheff.operators import qcheff_array, qcheffOperatorMatrix
 from qcheff.operators.sparse_operator import SparseOperator
 
 
 @dataclass(kw_only=True)
 class MagnusTimeEvol:
     tlist: qcheff_array
-    drift_ham: OperatorMatrix
+    drift_ham: qcheffOperatorMatrix
     control_sigs: qcheff_array
-    control_hams: Sequence[OperatorMatrix]
+    control_hams: Sequence[qcheffOperatorMatrix]
     dims: tuple[int, int] = field(init=False)
     dt: float = field(init=False)
     tlims: tuple[float, float] = field(init=False)
@@ -119,9 +119,10 @@ class MagnusTimeEvol:
 class MagnusTimeEvolDense(MagnusTimeEvol):
     def magnus_hamiltonians(
         self,
-        **kwargs,
+        **kwargs
     ) -> qcheff_array:
-        """Compute the Magnus Hamiltonians.
+        """
+        Compute the Magnus Hamiltonians.
 
         Parameters
         ----------
@@ -137,21 +138,14 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
         ------
         ValueError
             If both or neither of num_intervals and points_per_interval are provided.
-
         """
-        _num_intervals = kwargs.get("num_intervals", None)
+        _num_intervals = kwargs.get("num_intervals", self.tlist.shape[0])
         _points_per_interval = kwargs.get("points_per_interval", None)
 
-        if bool(_num_intervals) == bool(_points_per_interval):  # XOR
-            msg = "Either num_intervals or points_per_interval must be provided."
-            raise ValueError(msg)
-        elif _num_intervals is not None:
-            _points_per_interval = int(np.ceil(len(self.tlist) / _num_intervals))
-        elif _points_per_interval is not None:
+        if _points_per_interval is not None:
             _num_intervals = int(np.ceil(len(self.tlist) / _points_per_interval))
         else:
-            msg = "Something went wrong."
-            raise ValueError(msg)
+            _points_per_interval = int(np.ceil(len(self.tlist) / _num_intervals))
         # First, check if hamiltonians have already been computed.
         # If they have, check if the dimensions are commensurate with
         # the number of intervals and points per interval.
@@ -171,7 +165,11 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
         control_ham_arr = xp.array([x.op for x in self.control_hams])
         magnus1_ctrl_coeffs = (
             self.control_sigs.reshape(
-                (self.num_controls, _num_intervals, _points_per_interval)
+                (
+                    self.num_controls,
+                    _num_intervals,
+                    _points_per_interval,
+                )
             )
             .sum(axis=-1)
             .T

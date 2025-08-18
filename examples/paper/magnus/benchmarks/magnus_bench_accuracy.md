@@ -4,11 +4,33 @@ marimo-version: 0.8.13
 width: medium
 ---
 
-```{.python.marimo}
+```python {.marimo}
 import marimo as mo
+import qutip as qt
+import matplotlib.pyplot as plt
+import numpy as np
+from cupyx.profiler import benchmark
+import cupy as cp
+import scipy.sparse as spsparse
+import cupyx.scipy.sparse as cpspars
+import seaborn as sns
+import itertools
+import more_itertools
+import polars as pl
 ```
 
-```{.python.marimo}
+```python {.marimo}
+from qcheff.models.spin_chain.utils import (
+    setup_magnus_chain_example,
+    state_transfer_infidelity,
+)
+```
+
+```python {.marimo}
+from magnus_benchmark_utils import bench_magnus, magnus_bench_report, measure_accuracy
+```
+
+```python {.marimo column="1" hide_code="true"}
 magnus_param_form = mo.ui.batch(
     mo.md(
         r"""
@@ -91,62 +113,11 @@ magnus_param_form = mo.ui.batch(
 magnus_param_form
 ```
 
-```{.python.marimo}
-from qcheff.models.spin_chain.utils import (
-    setup_magnus_chain_example,
-    state_transfer_infidelity,
-)
+```python {.marimo column="2" hide_code="true"}
+mo.md(r"""# Accuracy benchmarking""")
 ```
 
-```{.python.marimo}
-chain_size_list = [7, 8, 9]
-bench_df = bench_magnus(
-    pulse_coeffs=np.array(
-        [
-            0.9817927559296183,
-            -1.0,
-            -0.19283820271219573,
-            -0.9097270782845742,
-            -0.7677860132667245,
-            -0.9997505100417258,
-            1.0,
-            1.0,
-            -1.0,
-            0.7714579619598767,
-        ]
-    ),
-    chain_size_list=chain_size_list,
-    **(magnus_param_form.value | {"qutip_tpts": 1000, "magnus_tpts": 20}),
-)
-```
-
-```{.python.marimo}
-bench_plot = magnus_bench_report(bench_df)
-sns.move_legend(bench_plot, loc="upper center")
-bench_plot.set_axis_labels("Matrix Dimension")
-bench_plot.set_xticklabels((fr"$2^{i}$" for i in chain_size_list))
-```
-
-```{.python.marimo}
-from magnus_benchmark_utils import bench_magnus, magnus_bench_report, measure_accuracy
-```
-
-```{.python.marimo}
-import qutip as qt
-import matplotlib.pyplot as plt
-import numpy as np
-from cupyx.profiler import benchmark
-import cupy as cp
-import scipy.sparse as spsparse
-import cupyx.scipy.sparse as cpspars
-import seaborn as sns
-import itertools
-import more_itertools
-import polars as pl
-import plotly.express as px
-```
-
-```{.python.marimo}
+```python {.marimo hide_code="true"}
 fig, ax = plt.subplots(1, 1)
 ax.loglog(
     num_tpts_list[:-1],
@@ -175,37 +146,34 @@ ax.loglog(
 #     markersize=10,
 #     label="Magnus GPU",
 #     lw=3,
-    # color=(0 / 255, 104 / 255, 181 / 255),
+# color=(0 / 255, 104 / 255, 181 / 255),
 #     alpha=0.5,
 # )
-ax.axhline(y=qutip_errs[0][-2], ls="--", lw =3, color="slategray")
+ax.axhline(y=qutip_errs[0][-2], ls="--", lw=3, color="slategray")
 ax.annotate("QuTiP Minimum Integration Error", xy=(40, 3e-10), fontsize=12)
 ax.legend(fontsize=10, frameon=False, loc="upper right")
 ax.set(
     xlabel="Time Points (QuTiP)/ Magnus Intervals",
     ylabel=r"Final state error",
     xlim=more_itertools.minmax(num_tpts_list[:-1]),
-    # ylim=(1e-30, 1),
+    ylim=(1e-30, 1),
 )
 fig
 ```
 
-```{.python.marimo}
-*magnus_cpu_errs, magnus_cpu_final_state = measure_accuracy(
+```python {.marimo}
+test_system, test_magnus = setup_magnus_chain_example(
     pulse_coeffs=test_coeffs,
-    **(
-        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
-        | {
-            "sample_num_list": num_tpts_list,
-            "method_name": "magnus",
-            "device": "cpu",
-        }
-    ),
+    # num_tlist=max(num_tpts_list),
+    **magnus_param_form.value | {"chain_size": 4},
 )
-magnus_cpu_errs
 ```
 
-```{.python.marimo}
+```python {.marimo}
+magnus_param_form.value
+```
+
+```python {.marimo}
 *magnus_gpu_errs, magnus_gpu_final_state = measure_accuracy(
     pulse_coeffs=test_coeffs,
     **(
@@ -220,7 +188,22 @@ magnus_cpu_errs
 magnus_gpu_errs
 ```
 
-```{.python.marimo}
+```python {.marimo}
+*magnus_cpu_errs, magnus_cpu_final_state = measure_accuracy(
+    pulse_coeffs=test_coeffs,
+    **(
+        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
+        | {
+            "sample_num_list": num_tpts_list,
+            "method_name": "magnus",
+            "device": "cpu",
+        }
+    ),
+)
+magnus_cpu_errs
+```
+
+```python {.marimo}
 *qutip_errs, qutip_final_state = measure_accuracy(
     pulse_coeffs=test_coeffs,
     **(
@@ -234,11 +217,7 @@ magnus_gpu_errs
 qutip_errs
 ```
 
-```{.python.marimo}
-list(map(lambda x: qt.hilbert_dist(x[0], x[1]),  itertools.combinations((magnus_cpu_final_state, magnus_gpu_final_state, qutip_final_state), 2)))
-```
-
-```{.python.marimo disabled="true"}
+```python {.marimo}
 test_coeffs = [
     0.9817927559296183,
     -1.0,
@@ -269,10 +248,48 @@ num_tpts_list = [
 ]
 ```
 
-```{.python.marimo}
-test_system, test_magnus = setup_magnus_chain_example(
-    pulse_coeffs=test_coeffs,
-    # num_tlist=max(num_tpts_list),
-    **magnus_param_form.value | {"chain_size":2},
+```python {.marimo}
+list(
+    map(
+        lambda x: qt.hilbert_dist(x[0], x[1]),
+        itertools.combinations(
+            (magnus_cpu_final_state, magnus_gpu_final_state, qutip_final_state), 2
+        ),
+    )
 )
+```
+
+```python {.marimo column="3" hide_code="true"}
+mo.md(r"""# Performance benchmarks""")
+```
+
+```python {.marimo}
+mo.stop(not magnus_param_form.value, "Submit form to continue")
+chain_size_list = [7, 8, 9]
+bench_df = bench_magnus(
+    pulse_coeffs=np.array(
+        [
+            0.9817927559296183,
+            -1.0,
+            -0.19283820271219573,
+            -0.9097270782845742,
+            -0.7677860132667245,
+            -0.9997505100417258,
+            1.0,
+            1.0,
+            -1.0,
+            0.7714579619598767,
+        ]
+    ),
+    chain_size_list=chain_size_list,
+    **(magnus_param_form.value | {"qutip_tpts": 1000, "magnus_tpts": 20}),
+)
+```
+
+```python {.marimo}
+mo.stop(not magnus_param_form.value, "Submit form to continue")
+bench_plot = magnus_bench_report(bench_df)
+sns.move_legend(bench_plot, loc="upper center")
+bench_plot.set_axis_labels("Matrix Dimension")
+bench_plot.set_xticklabels((rf"$2^{i}$" for i in chain_size_list))
 ```

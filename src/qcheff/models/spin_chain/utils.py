@@ -212,10 +212,7 @@ def simulate_chain_dynamics(
 
 
 # Here is a function that will set the system up for us.
-def setup_magnus_chain_example(
-    pulse_coeffs: Sequence[float],
-    **kwargs,
-):
+def setup_magnus_chain_example(pulse_coeffs: Sequence[float], **kwargs):
     g = kwargs.get("g", 5e-3)
     J = kwargs.get("J", 5e-2)
     x_pulse_coeffs, y_pulse_coeffs = np.array_split(
@@ -232,6 +229,7 @@ def setup_magnus_chain_example(
 
     _debug = kwargs.get("debug", False)
 
+    # TODO: Implement better logging
     if _debug:
         pprint.pprint(kwargs)  # noqa: T203
 

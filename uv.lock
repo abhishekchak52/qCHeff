@@ -1173,6 +1173,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pytest-modern"
+version = "0.7.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+    { name = "rich" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ec/09/3a9d3f659004ad74bc84f01a9abcd5dda3309beb75f8f24d4dee04aa0b70/pytest_modern-0.7.3.tar.gz", hash = "sha256:84babc68157fb6d2b510d3fc5574ded4522c6c60ca37bae2339f56d1c3b6dd8b", size = 34757, upload-time = "2025-07-24T15:03:15.444Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c8/23/a38e318aeaec896b036ff1d7afea9768e45cb1ff0fea1ad73e1e57d07641/pytest_modern-0.7.3-py3-none-any.whl", hash = "sha256:7010abd08c3334de4f84773da9b2b2d33cc42066aa39efafcd6c85de385b5910", size = 19483, upload-time = "2025-07-24T15:03:14.628Z" },
+]
+
+[[package]]
 name = "pytest-rich"
 version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1273,6 +1286,7 @@ test = [
     { name = "pytest" },
     { name = "pytest-benchmark" },
     { name = "pytest-cov" },
+    { name = "pytest-modern" },
     { name = "pytest-rich" },
 ]
 type = [
@@ -1307,6 +1321,7 @@ test = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-benchmark", specifier = ">=4.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
+    { name = "pytest-modern", specifier = ">=0.7.3" },
     { name = "pytest-rich", specifier = ">=0.2.0" },
 ]
 type = [{ name = "mypy", specifier = ">=1.11.2" }]

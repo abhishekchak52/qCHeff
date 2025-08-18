@@ -4,14 +4,15 @@ import cupyx.scipy.sparse as cpsparse
 import scipy.sparse as spsparse
 
 from qcheff.magnus.magnus import MagnusTimeEvolDense, MagnusTimeEvolSparseLazy
-from qcheff.operators.operator_base import OperatorMatrix, qcheff_array
+from qcheff.operators import qcheffOperatorMatrix
+from qcheff.operators.operator_base import qcheff_array
 
 
 def magnus(
     tlist: qcheff_array,
-    drift_ham: OperatorMatrix,
+    drift_ham: qcheffOperatorMatrix,
     control_sigs: qcheff_array,
-    control_hams: Sequence[OperatorMatrix],
+    control_hams: Sequence[qcheffOperatorMatrix],
 ):
     """Dispatch Magnus to the appropriate backend based on device of the given array.
 
