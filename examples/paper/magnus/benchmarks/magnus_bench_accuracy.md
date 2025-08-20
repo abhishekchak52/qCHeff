@@ -4,7 +4,7 @@ marimo-version: 0.8.13
 width: medium
 ---
 
-```python {.marimo}
+```python {.marimo name="setup"}
 import marimo as mo
 import qutip as qt
 import matplotlib.pyplot as plt
@@ -14,9 +14,15 @@ import cupy as cp
 import scipy.sparse as spsparse
 import cupyx.scipy.sparse as cpspars
 import seaborn as sns
+import seaborn.objects as so
+import matplotlib
 import itertools
 import more_itertools
+from more_itertools import last
+import pandas as pd
 import polars as pl
+from collections import ChainMap
+# Initialization code that runs before all other cells
 ```
 
 ```python {.marimo}
@@ -30,7 +36,271 @@ from qcheff.models.spin_chain.utils import (
 from magnus_benchmark_utils import bench_magnus, magnus_bench_report, measure_accuracy
 ```
 
+```python {.marimo}
+test_system, test_magnus = setup_magnus_chain_example(
+    pulse_coeffs=test_coeffs,
+    # num_tlist=max(num_tpts_list),
+    **magnus_param_form.value | {"chain_size": 5},
+)
+_chain_size = 3
+allzero_state = qt.basis(dimensions=[2] * _chain_size, n=[0] * _chain_size)
+```
+
+```python {.marimo}
+def measure_accuracy_both(pulse_coeffs, sample_num_list: tuple[float, ...], **kwargs):
+    chain_size = kwargs.get("chain_size", 3)
+
+    allzero_state = qt.basis(dimensions=[2] * chain_size, n=[0] * chain_size).unit()
+
+    sim_options = ChainMap(dict(num_tlist=max(sample_num_list)), kwargs)
+
+    test_system, test_magnus = setup_magnus_chain_example(
+        pulse_coeffs=pulse_coeffs, **sim_options
+    )
+
+    local_tlist = lambda sample_num: np.linspace(*test_magnus.tlims, sample_num)
+
+    def qutip_final_state(sample_num):
+        return qt.Qobj(
+            qt.sesolve(
+                H=test_system.get_qutip_tdham(local_tlist(sample_num)),
+                psi0=allzero_state,
+                tlist=local_tlist(sample_num),
+                options={"store_final_state": True},
+            ).final_state[:]
+        )
+
+    def magnus_final_state(num_intervals):
+        return qt.Qobj(
+            cp.asnumpy(
+                more_itertools.last(
+                    test_magnus.evolve(
+                        init_state=allzero_state[:],
+                        num_intervals=num_intervals,
+                    )
+                )
+            )
+        )
+
+    final_states = {
+        "num_points": sample_num_list,
+        "magnus": list(map(magnus_final_state, sample_num_list)),
+        "qutip": list(map(qutip_final_state, sample_num_list)),
+    }
+
+    return final_states
+```
+
+```python {.marimo}
+sim_options = ChainMap(dict(chain_size=6), magnus_param_form.value)
+
+accuracy_data = measure_accuracy_both(
+    pulse_coeffs=test_coeffs,
+    sample_num_list=num_tpts_list,
+    **sim_options,
+)
+# accuracy_data
+```
+
+```python {.marimo}
+def calculate_overlaps(result, reference):
+    overlap_funcs = [qt.hilbert_dist, qt.fidelity, qt.hellinger_dist]
+    overlap_dict = {func.__name__: func(result, reference) for func in overlap_funcs}
+    return overlap_dict
+```
+
+```python {.marimo}
+def calculate_overlap_with_final_state(states):
+    final_state = states[-1]
+    return [calculate_overlaps(state, reference=final_state) for state in states]
+```
+
+```python {.marimo}
+overlap_data = (
+    pl.DataFrame(
+        {
+            "num_points": accuracy_data["num_points"],
+            "qutip": calculate_overlap_with_final_state(accuracy_data["qutip"]),
+            "magnus": calculate_overlap_with_final_state(accuracy_data["magnus"]),
+        }
+    )
+    .unpivot(index="num_points", variable_name="method", value_name="overlaps")
+    .unnest("overlaps")
+    .with_columns(infidelity=1 - pl.col("fidelity"))
+)
+overlap_data
+```
+
+```python {.marimo}
+overlap_data_long = overlap_data.drop("fidelity").unpivot(
+    index=["num_points", "method"],
+    variable_name="metric",
+    value_name="metric_value",
+)
+overlap_data_long
+```
+
+```python {.marimo}
+(
+    so.Plot(overlap_data_long, x="num_points", y="metric_value", color="method")
+    .facet(col="metric")
+    .add(so.Line(marker="x", linewidth=1))
+    .layout(size=(10, 4), engine="constrained")  # 0068B5#0068B5
+    .theme(sns.axes_style("ticks") | sns.plotting_context("notebook"))
+    .scale(x="log", y="log", color=["#0068B5", "#76B900"])
+    .label(y="", x="Number of points/Magnus Intervals")
+    .plot(pyplot=True)
+    ._figure
+)
+```
+
+```python {.marimo}
+
+```
+
 ```python {.marimo column="1" hide_code="true"}
+mo.md(r"""# Accuracy benchmarking""")
+```
+
+```python {.marimo hide_code="true"}
+fig, ax = plt.subplots(1, 1)
+ax.loglog(
+    num_tpts_list[:-1],
+    qutip_errs[0][:-1],
+    "o-",
+    markersize=10,
+    label="QuTiP Numerical Integration",
+    lw=3,
+    alpha=0.5,
+    color="slategray",
+)
+ax.loglog(
+    num_tpts_list[:-1],
+    magnus_cpu_errs[0][:-1],
+    "X-",
+    markersize=10,
+    label=r"${\rm qCH_{\rm eff}}$ Magnus",
+    lw=3,
+    alpha=0.5,
+    color=(118 / 255, 185 / 255, 0 / 255),
+)
+# ax.loglog(
+#     num_tpts_list[:-1],
+#     magnus_gpu_errs[0][:-1],
+#     marker="P",
+#     markersize=10,
+#     label="Magnus GPU",
+#     lw=3,
+# color=(0 / 255, 104 / 255, 181 / 255),
+#     alpha=0.5,
+# )
+ax.axhline(y=qutip_errs[0][-2], ls="--", lw=3, color="slategray")
+ax.annotate("QuTiP Minimum Integration Error", xy=(40, 1e-9), fontsize=12)
+ax.legend(fontsize=10, frameon=False, loc="upper right")
+ax.set(
+    xlabel="Time Points (QuTiP)/ Magnus Intervals",
+    ylabel=r"Final state error",
+    xlim=more_itertools.minmax(num_tpts_list[:-1]),
+    ylim=(1e-15, 10),
+)
+fig
+```
+
+```python {.marimo}
+test_coeffs = [
+    0.9817927559296183,
+    -1.0,
+    -0.19283820271219573,
+    -0.9097270782845742,
+    -0.7677860132667245,
+    -0.9997505100417258,
+    1.0,
+    1.0,
+    -1.0,
+    0.7714579619598767,
+]
+num_tpts_list = [
+    # 2,
+    5,
+    10,
+    20,
+    50,
+    100,
+    200,
+    500,
+    1000,
+    2000,
+    # 10000,
+    # 20000,
+    # 100000,
+    # 200000,
+]
+```
+
+```python {.marimo}
+magnus_param_form.value
+```
+
+```python {.marimo}
+*magnus_gpu_errs, magnus_gpu_final_state = measure_accuracy(
+    pulse_coeffs=test_coeffs,
+    **(
+        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
+        | {
+            "sample_num_list": num_tpts_list,
+            "method_name": "magnus",
+            "device": "gpu",
+        }
+    ),
+)
+magnus_gpu_errs
+```
+
+```python {.marimo}
+*magnus_cpu_errs, magnus_cpu_final_state = measure_accuracy(
+    pulse_coeffs=test_coeffs,
+    **(
+        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
+        | {
+            "sample_num_list": num_tpts_list,
+            "method_name": "magnus",
+            "device": "cpu",
+        }
+    ),
+)
+magnus_cpu_errs
+```
+
+```python {.marimo}
+*qutip_errs, qutip_final_state = measure_accuracy(
+    pulse_coeffs=test_coeffs,
+    **(
+        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
+        | {
+            "sample_num_list": num_tpts_list,
+            "method_name": "qutip",
+        }
+    ),
+)
+qutip_errs
+```
+
+```python {.marimo}
+list(
+    map(
+        lambda x: qt.hilbert_dist(x[0], x[1]),
+        itertools.combinations(
+            (magnus_cpu_final_state, magnus_gpu_final_state, qutip_final_state), 2
+        ),
+    )
+)
+```
+
+```python {.marimo column="2" hide_code="true"}
+mo.md(r"""# Performance benchmarks""")
+```
+
+```python {.marimo hide_code="true"}
 magnus_param_form = mo.ui.batch(
     mo.md(
         r"""
@@ -111,156 +381,6 @@ magnus_param_form = mo.ui.batch(
     },
 ).form()
 magnus_param_form
-```
-
-```python {.marimo column="2" hide_code="true"}
-mo.md(r"""# Accuracy benchmarking""")
-```
-
-```python {.marimo hide_code="true"}
-fig, ax = plt.subplots(1, 1)
-ax.loglog(
-    num_tpts_list[:-1],
-    qutip_errs[0][:-1],
-    "o-",
-    markersize=10,
-    label="QuTiP Numerical Integration",
-    lw=3,
-    alpha=0.5,
-    color="slategray",
-)
-ax.loglog(
-    num_tpts_list[:-1],
-    magnus_cpu_errs[0][:-1],
-    "X-",
-    markersize=10,
-    label=r"${\rm qCH_{\rm eff}}$ Magnus",
-    lw=3,
-    alpha=0.5,
-    color=(118 / 255, 185 / 255, 0 / 255),
-)
-# ax.loglog(
-#     num_tpts_list[:-1],
-#     magnus_gpu_errs[0][:-1],
-#     marker="P",
-#     markersize=10,
-#     label="Magnus GPU",
-#     lw=3,
-# color=(0 / 255, 104 / 255, 181 / 255),
-#     alpha=0.5,
-# )
-ax.axhline(y=qutip_errs[0][-2], ls="--", lw=3, color="slategray")
-ax.annotate("QuTiP Minimum Integration Error", xy=(40, 3e-10), fontsize=12)
-ax.legend(fontsize=10, frameon=False, loc="upper right")
-ax.set(
-    xlabel="Time Points (QuTiP)/ Magnus Intervals",
-    ylabel=r"Final state error",
-    xlim=more_itertools.minmax(num_tpts_list[:-1]),
-    ylim=(1e-30, 1),
-)
-fig
-```
-
-```python {.marimo}
-test_system, test_magnus = setup_magnus_chain_example(
-    pulse_coeffs=test_coeffs,
-    # num_tlist=max(num_tpts_list),
-    **magnus_param_form.value | {"chain_size": 4},
-)
-```
-
-```python {.marimo}
-magnus_param_form.value
-```
-
-```python {.marimo}
-*magnus_gpu_errs, magnus_gpu_final_state = measure_accuracy(
-    pulse_coeffs=test_coeffs,
-    **(
-        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
-        | {
-            "sample_num_list": num_tpts_list,
-            "method_name": "magnus",
-            "device": "gpu",
-        }
-    ),
-)
-magnus_gpu_errs
-```
-
-```python {.marimo}
-*magnus_cpu_errs, magnus_cpu_final_state = measure_accuracy(
-    pulse_coeffs=test_coeffs,
-    **(
-        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
-        | {
-            "sample_num_list": num_tpts_list,
-            "method_name": "magnus",
-            "device": "cpu",
-        }
-    ),
-)
-magnus_cpu_errs
-```
-
-```python {.marimo}
-*qutip_errs, qutip_final_state = measure_accuracy(
-    pulse_coeffs=test_coeffs,
-    **(
-        {k: v for k, v in magnus_param_form.value.items() if k != "num_tlist"}
-        | {
-            "sample_num_list": num_tpts_list,
-            "method_name": "qutip",
-        }
-    ),
-)
-qutip_errs
-```
-
-```python {.marimo}
-test_coeffs = [
-    0.9817927559296183,
-    -1.0,
-    -0.19283820271219573,
-    -0.9097270782845742,
-    -0.7677860132667245,
-    -0.9997505100417258,
-    1.0,
-    1.0,
-    -1.0,
-    0.7714579619598767,
-]
-num_tpts_list = [
-    # 2,
-    5,
-    10,
-    20,
-    50,
-    100,
-    200,
-    500,
-    1000,
-    2000,
-    # 10000,
-    # 20000,
-    # 100000,
-    # 200000,
-]
-```
-
-```python {.marimo}
-list(
-    map(
-        lambda x: qt.hilbert_dist(x[0], x[1]),
-        itertools.combinations(
-            (magnus_cpu_final_state, magnus_gpu_final_state, qutip_final_state), 2
-        ),
-    )
-)
-```
-
-```python {.marimo column="3" hide_code="true"}
-mo.md(r"""# Performance benchmarks""")
 ```
 
 ```python {.marimo}

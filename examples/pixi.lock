@@ -1512,7 +1512,7 @@ packages:
 - pypi: ..
   name: qcheff
   version: 0.2.0
-  sha256: 0e19b6b25dfb414dc9483f1068130f32745b1368af98009e110c373053ae050b
+  sha256: 05bcf289950441e78bd2a81cc22cd124d82e7b3716d540a631ee9535b84cd5ed
   requires_dist:
   - more-itertools>=10.4.0
   - numpy>=2.0.0
@@ -1521,6 +1521,7 @@ packages:
   - scqubits>=4.2 ; extra == 'models'
   - cupy-cuda11x>=13.3.0 ; extra == 'cupy-cuda11x'
   - cupy-cuda12x>=13.3.0 ; extra == 'cupy-cuda12x'
+  - cupy-cuda13x>=13.6.0 ; extra == 'cupy-cuda13x'
   requires_python: '>=3.11'
   editable: true
 - pypi: https://files.pythonhosted.org/packages/01/cd/ad3e57417a3ba1f635018a83620d24c3dfe53a7da350ef0f23558d022382/qutip-5.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
