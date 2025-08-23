@@ -21,6 +21,7 @@ import more_itertools
 from more_itertools import last
 import pandas as pd
 import polars as pl
+import hashlib
 from collections import ChainMap
 # Initialization code that runs before all other cells
 ```
@@ -33,17 +34,58 @@ from qcheff.models.spin_chain.utils import (
 ```
 
 ```python {.marimo}
+rng = np.random.default_rng()
+```
+
+```python {.marimo}
 from magnus_benchmark_utils import bench_magnus, magnus_bench_report, measure_accuracy
 ```
 
 ```python {.marimo}
+_chain_size = 6
 test_system, test_magnus = setup_magnus_chain_example(
     pulse_coeffs=test_coeffs,
     # num_tlist=max(num_tpts_list),
-    **magnus_param_form.value | {"chain_size": 5},
+    **magnus_param_form.value | {"chain_size": _chain_size},
 )
-_chain_size = 3
 allzero_state = qt.basis(dimensions=[2] * _chain_size, n=[0] * _chain_size)
+```
+
+```python {.marimo}
+test_res = qt.sesolve(
+    H=test_system.get_qutip_tdham(local_tlist),
+    psi0=allzero_state,
+    tlist=local_tlist,
+    options={"store_final_state": True, "store_states": True},
+)
+```
+
+```python {.marimo}
+_local_tnum = 250
+local_tlist = np.insert(
+    np.take(
+        test_magnus.tlist.reshape((_local_tnum, -1)),
+        indices=np.asarray([-1]),
+        axis=1,
+    ).squeeze(),
+    obj=0,
+    values=np.asarray([0]),
+)
+magnus_states = [
+    qt.Qobj(cp.asnumpy(state), dims=[[2] * 6, 1])
+    for state in test_magnus.evolve(
+        init_state=allzero_state[:],
+        num_intervals=_local_tnum,
+    )
+]
+magnus_states[:3]
+```
+
+```python {.marimo}
+qutip_pops = list(
+    map(lambda x: qt.expect(allzero_state.proj(), x), test_res.states[1:])
+)
+magnus_pops = list(map(lambda x: qt.expect(allzero_state.proj(), x), magnus_states))
 ```
 
 ```python {.marimo}
@@ -58,17 +100,20 @@ def measure_accuracy_both(pulse_coeffs, sample_num_list: tuple[float, ...], **kw
         pulse_coeffs=pulse_coeffs, **sim_options
     )
 
-    local_tlist = lambda sample_num: np.linspace(*test_magnus.tlims, sample_num)
+    def local_tlist(sample_num):
+        return np.take(
+            test_magnus.tlist.reshape((sample_num, -1)),
+            indices=np.asarray([-1]),
+            axis=1,
+        ).squeeze()
 
     def qutip_final_state(sample_num):
-        return qt.Qobj(
-            qt.sesolve(
-                H=test_system.get_qutip_tdham(local_tlist(sample_num)),
-                psi0=allzero_state,
-                tlist=local_tlist(sample_num),
-                options={"store_final_state": True},
-            ).final_state[:]
-        )
+        return qt.sesolve(
+            H=test_system.get_qutip_tdham(local_tlist(sample_num)),
+            psi0=allzero_state,
+            tlist=local_tlist(sample_num),
+            options={"store_final_state": True, "store_states": True},
+        ).final_state
 
     def magnus_final_state(num_intervals):
         return qt.Qobj(
@@ -83,6 +128,7 @@ def measure_accuracy_both(pulse_coeffs, sample_num_list: tuple[float, ...], **kw
         )
 
     final_states = {
+        "pulse_coeffs": pulse_coeffs,
         "num_points": sample_num_list,
         "magnus": list(map(magnus_final_state, sample_num_list)),
         "qutip": list(map(qutip_final_state, sample_num_list)),
@@ -92,7 +138,7 @@ def measure_accuracy_both(pulse_coeffs, sample_num_list: tuple[float, ...], **kw
 ```
 
 ```python {.marimo}
-sim_options = ChainMap(dict(chain_size=6), magnus_param_form.value)
+sim_options = ChainMap(dict(chain_size=4), magnus_param_form.value)
 
 accuracy_data = measure_accuracy_both(
     pulse_coeffs=test_coeffs,
@@ -100,6 +146,63 @@ accuracy_data = measure_accuracy_both(
     **sim_options,
 )
 # accuracy_data
+```
+
+```python {.marimo}
+manypulse_accuracy_data = list(
+    measure_accuracy_both(
+        pulse_coeffs=_coeffs,
+        sample_num_list=num_tpts_list,
+        **sim_options,
+    )
+    for _coeffs in mo.status.progress_bar(test_pulses_coeff)
+)
+```
+
+```python {.marimo}
+manypulse_overlap_data = (
+    pl.concat(
+        (
+            pl.DataFrame(
+                {
+                    "pulse_coeffs": hashlib.sha1(
+                        _accuracy_data["pulse_coeffs"].tobytes()
+                    ).hexdigest(),
+                    "num_points": _accuracy_data["num_points"],
+                    "qutip": calculate_overlap_with_final_state(
+                        _accuracy_data["qutip"]
+                    ),
+                    "magnus": calculate_overlap_with_final_state(
+                        _accuracy_data["magnus"]
+                    ),
+                }
+            )
+            for _accuracy_data in manypulse_accuracy_data
+        )
+    )
+    .unpivot(
+        index=["pulse_coeffs", "num_points"],
+        variable_name="method",
+        value_name="overlaps",
+    )
+    .unnest("overlaps")
+    .with_columns(infidelity=1 - pl.col("fidelity"))
+)
+manypulse_overlap_data
+```
+
+```python {.marimo}
+manypulse_overlap_data_long = manypulse_overlap_data.drop("fidelity").unpivot(
+    index=["num_points", "method", "pulse_coeffs"],
+    variable_name="metric",
+    value_name="metric_value",
+)
+manypulse_overlap_data_long
+```
+
+```python {.marimo}
+test_pulses_coeff = rng.standard_normal(size=(50, 10))
+test_pulses_coeff[0]
 ```
 
 ```python {.marimo}
@@ -141,21 +244,32 @@ overlap_data_long
 ```
 
 ```python {.marimo}
-(
-    so.Plot(overlap_data_long, x="num_points", y="metric_value", color="method")
-    .facet(col="metric")
-    .add(so.Line(marker="x", linewidth=1))
-    .layout(size=(10, 4), engine="constrained")  # 0068B5#0068B5
-    .theme(sns.axes_style("ticks") | sns.plotting_context("notebook"))
-    .scale(x="log", y="log", color=["#0068B5", "#76B900"])
-    .label(y="", x="Number of points/Magnus Intervals")
-    .plot(pyplot=True)
-    ._figure
-)
-```
+with sns.axes_style("ticks"), sns.plotting_context("notebook"):
+    accuracy_fig, accuracy_ax = plt.subplots(1, 1, layout="constrained", figsize=(5, 4))
 
-```python {.marimo}
-
+    acc_plot = (
+        so.Plot(
+            manypulse_overlap_data.drop("pulse_coeffs").sort("num_points"),
+            x="num_points",
+            y="infidelity",
+            color="method",
+        )
+        .add(so.Dots(alpha=0.1), legend=False)
+        .add(so.Line(), so.Agg("mean"))
+        .scale(x="log", y="log", color=["slategray", "#76B900"])
+        .limit(x=(10, 10000), y=(1e-14, 10))
+        .label(x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error")
+        .on(accuracy_ax)
+        .plot(pyplot=True)
+    )
+    legend = acc_plot._figure.legends.pop(0)
+    accuracy_ax.legend(
+        legend.legend_handles,
+        ["QuTiP Numerical Integration", r"${\rm qCH_{\rm eff}}$ Magnus"],
+        frameon=False,
+    )
+    accuracy_ax.grid(axis="y")
+accuracy_fig
 ```
 
 ```python {.marimo column="1" hide_code="true"}
@@ -220,8 +334,6 @@ test_coeffs = [
     0.7714579619598767,
 ]
 num_tpts_list = [
-    # 2,
-    5,
     10,
     20,
     50,
@@ -230,10 +342,9 @@ num_tpts_list = [
     500,
     1000,
     2000,
-    # 10000,
-    # 20000,
-    # 100000,
-    # 200000,
+    5000,
+    10000,
+    20000,
 ]
 ```
 
@@ -355,13 +466,13 @@ magnus_param_form = mo.ui.batch(
             start=10,
             stop=1000,
             step=1,
-            value=25,
+            value=41,
         ),
         "num_tlist": mo.ui.number(
             start=10,
             stop=100000,
             step=10,
-            value=200,
+            value=500,
         ),
         "num_magnus_intervals": mo.ui.number(
             start=10,

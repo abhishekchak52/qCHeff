@@ -4,7 +4,7 @@ marimo-version: 0.8.11
 width: medium
 ---
 
-```{.python.marimo}
+```python {.marimo}
 import marimo as mo
 import qutip as qt
 import matplotlib.pyplot as plt
@@ -17,15 +17,14 @@ import seaborn as sns
 import itertools
 import more_itertools
 import polars as pl
-import plotly.express as px
 ```
 
-```{.python.marimo}
+```python {.marimo}
 from qcheff.utils.system import QuTiPSystem
 from qcheff.utils.pulses import FourierPulse
 ```
 
-```{.python.marimo}
+```python {.marimo}
 qtres_rwa = qt.sesolve(
     H=create_single_spin_RWA_system(
         drive_coeffs=test_coeffs, gate_time=max(test_tlist)
@@ -46,7 +45,7 @@ plt.plot(test_tlist, np.asarray(qtres_rwa.expect).T, label=["x", "y", "z"])
 plt.legend()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 magnus_full_states = list(
     map(
         qt.Qobj,
@@ -86,12 +85,10 @@ magnus_full_expect = qt.expect(
 magnus_RWA_expect = qt.expect(
     [qt.sigmax(), qt.sigmay(), qt.sigmaz()], magnus_RWA_states
 )
-magnus_expect = qt.expect(
-    [qt.sigmax(), qt.sigmay(), qt.sigmaz()], magnus_states
-)
+magnus_expect = qt.expect([qt.sigmax(), qt.sigmay(), qt.sigmaz()], magnus_states)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 bloch_fig = plt.figure(layout="constrained", figsize=(6, 6))
 bloch_ax = bloch_fig.add_subplot(projection="3d")
 b = qt.Bloch(fig=bloch_fig, axes=bloch_ax)
@@ -140,21 +137,21 @@ bloch_fig.legend(
 bloch_fig
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_tlist = np.linspace(0, pulse_params_form.value["tg"], 5000)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_coeffs = [1, 0, 0.1, 0]
 ```
 
-```{.python.marimo}
+```python {.marimo}
 # fig, ax = plt.subplots()
 # create_single_spin_full_system(drive_coeffs=test_coeffs, gate_time=max(test_tlist)).plot_control_signals(tlist=test_tlist, axis=ax)
 # fig
 ```
 
-```{.python.marimo}
+```python {.marimo}
 pulse_params_form = mo.ui.batch(
     mo.md("""
 Amplitude : {amp}
@@ -172,10 +169,8 @@ Number of Magnus intervals: {num_intervals}
 pulse_params_form
 ```
 
-```{.python.marimo}
-def create_single_spin_RWA_system(
-    drive_coeffs: list[float], gate_time: float = 10.0
-):
+```python {.marimo}
+def create_single_spin_RWA_system(drive_coeffs: list[float], gate_time: float = 10.0):
     drift_ham = qt.Qobj(np.zeros((2, 2)))  # qubit frequency = 1
     control_sigs = [
         FourierPulse(
@@ -191,9 +186,7 @@ def create_single_spin_RWA_system(
     return system
 
 
-def create_single_spin_full_system(
-    drive_coeffs: list[float], gate_time: float = 10.0
-):
+def create_single_spin_full_system(drive_coeffs: list[float], gate_time: float = 10.0):
     drift_ham = qt.Qobj(np.zeros((2, 2)))  # qubit frequency = 1
     control_sigs = [
         # sigx term
@@ -231,6 +224,6 @@ def create_single_spin_full_system(
     return system
 ```
 
-```{.python.marimo}
+```python {.marimo}
 
 ```
