@@ -4,7 +4,7 @@ marimo-version: 0.8.13
 width: medium
 ---
 
-```{.python.marimo disabled="true"}
+```python {.marimo}
 bench_df = (
     JCMottAnalysis(model=test_model, level_labels=polariton_levels)
     .benchmark(
@@ -20,7 +20,7 @@ bench_df = (
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 npad_bench_plot = sns.catplot(
     bench_df,
     kind="bar",
@@ -44,48 +44,48 @@ npad_bench_plot.set_axis_labels("Subroutine", "Time (s)")
 npad_bench_plot
 ```
 
-```{.python.marimo}
+```python {.marimo}
 from qcheff.operators import qcheffOperator
 from qcheff.iswt import NPAD
 ```
 
-```{.python.marimo}
+```python {.marimo}
 from qcheff.models.jaynes_cummings.models import JCModel
 from qcheff.models.jaynes_cummings.utils import JCMottAnalysis
 ```
 
-```{.python.marimo}
+```python {.marimo}
 jc_param_form
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_model = JCModel(**jc_param_form.value)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_hs = test_model.jc_scqubits_hilbertspace()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 detuning_list = np.linspace(-10, 10, 101)
 detuning_dict = {"detuning": detuning_list}
 
 
-# def update_jch_detuning(param_sweep, detuning):
-#     param_sweep.hilbertspace["q"].E_osc = (
-#         param_sweep.hilbertspace["r"].E_osc - detuning
-#     )
+def update_jch_detuning(param_sweep, detuning):
+    param_sweep.hilbertspace["q"].E_osc = (
+        param_sweep.hilbertspace["r"].E_osc - detuning
+    )
 
 
-# jch_paramsweep = scq.ParameterSweep(
-#     hilbertspace=test_hs,
-#     paramvals_by_name=detuning_dict,
-#     update_hilbertspace=update_jch_detuning,
-#     evals_count=11,
-# )
+jch_paramsweep = scq.ParameterSweep(
+    hilbertspace=test_hs,
+    paramvals_by_name=detuning_dict,
+    update_hilbertspace=update_jch_detuning,
+    evals_count=11,
+)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 jch_evals = (
     (
         pl.DataFrame(
@@ -124,7 +124,7 @@ jch_evals = (
 )
 ```
 
-```{.python.marimo disabled="true"}
+```python {.marimo}
 jc_ax = sns.relplot(
     jch_evals,
     kind="line",
@@ -144,11 +144,11 @@ jc_ax.set(
 jc_ax
 ```
 
-```{.python.marimo}
+```python {.marimo}
 npad_error_df
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mott_df = (
     all_evals_df.filter(
         ((pl.col("qubit state") == 1) & (pl.col("detuning") > 0))
@@ -181,11 +181,117 @@ mott_df = (
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mott_df.filter(pl.col("Method").eq("NPAD (CPU)")).sort(by="Level")
 ```
 
-```{.python.marimo}
+```python {.marimo}
+(
+    so.Plot(
+        mott_df.filter(pl.col("Method").eq("NPAD (CPU)")).sort(by="Level"),
+        x="detuning",
+        y="Critical Chemical Potential",
+        color="Level",
+    ).add(so.Line(linewidth=2), legend=True)
+)._figure
+```
+
+```python {.marimo}
+with sns.plotting_context("notebook"), sns.axes_style("ticks"):
+    npad_jch_fig, (jch_mott_ax, jch_err_ax) = plt.subplots(
+        nrows=2,
+        sharex=True,
+        layout="constrained",
+        figsize=(5, 8),
+    )
+    (
+        so.Plot(
+            mott_df.filter(pl.col("Method").eq("NPAD (CPU)")).sort(by="Level"),
+            x="detuning",
+            y="Critical Chemical Potential",
+            color="Level",
+        )
+        .add(so.Line(linewidth=2), legend=False)
+        .scale(color="Blues_r")
+        .on(jch_mott_ax)
+        .plot(pyplot=True)
+    )
+
+    jch_mott_ax.plot(
+        detuning_list,
+        test_model.critical_chemical_potential(
+            detuning_list,
+            np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[:, None],
+        ).T,
+        markevery=5,
+        marker="x",
+        color="k",
+        lw=0,
+        markersize=5,
+    )
+    jch_mott_ax.set(
+        xlim=more_itertools.minmax(detuning_list),
+        xlabel=r"$\Delta/g$",
+    )
+    _legend_elements = [
+        plt.Line2D([0], [0], color="k", lw=1, label="Numerical"),
+        plt.Line2D(
+            [0],
+            [0],
+            marker="x",
+            color="k",
+            label="Theory",
+            markerfacecolor="k",
+            lw=0,
+            markersize=5,
+        ),
+    ]
+    jch_mott_ax.legend(
+        handles=_legend_elements,
+        frameon=False,
+        loc="lower right",
+    )
+    jch_mott_ax.set(ylabel=r"$(\mu-\omega)/g$")
+
+    jch_error_plot = (
+        so.Plot(npad_error_df, x="detuning", y="Error", color="Method")
+        .add(so.Band(), so.Est(errorbar="ci"), legend=False)
+        .add(so.Line(), so.Agg("mean"))
+        .scale(color=so.Nominal(["slategray", "#76B900"]))
+        .on(jch_err_ax)
+        .plot(pyplot=True)
+    )
+    jch_err_ax.set(
+        xlim=more_itertools.minmax(detuning_list),
+        yscale="log",
+        ylim=(5e-15, 2e-12),
+        xlabel=r"$\Delta/g$",
+        ylabel="Relative Error",
+    )
+    jch_err_ax.grid(axis="y")
+    jch_err_legend = jch_error_plot._figure.legends.pop(0)
+    jch_err_ax.legend(
+        jch_err_legend.legend_handles,
+        ["scQubits", "NPAD"],
+        frameon=False,
+        title="Method",
+        loc="upper center",
+        ncols=2,
+    )
+    # sns.despine(npad_jch_fig)
+
+npad_jch_fig
+```
+
+```python {.marimo}
+npad_error_df
+```
+
+```python {.marimo}
+
+```
+
+```python {.marimo}
 npad_jc_fig, npad_jc_axes = plt.subplots(
     nrows=2,
     ncols=1,
@@ -266,7 +372,7 @@ with sns.plotting_context("paper"):
 npad_jc_fig
 ```
 
-```{.python.marimo}
+```python {.marimo}
 npad_error_df = (
     mott_df.pivot(
         "Method",
@@ -324,27 +430,27 @@ npad_error_df = (
 npad_error_df
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_op = qcheffOperator(spsparse.csr_array(test_hs.hamiltonian()[:]))
 test_op.couplings()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 couplings = [(i, (i - 1) + test_model.resonator_levels) for i in range(1, 10)]
 print(couplings)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_NPAD = NPAD(test_op, copy=True)
 test_NPAD.eliminate_couplings(couplings)
 test_NPAD.H.couplings()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 
 ```
 
-```{.python.marimo}
+```python {.marimo}
 polariton_levels = list(
     more_itertools.flatten(
         ([(0, 0)], *(((1, i), (0, i + 1)) for i in range(10)))
@@ -353,7 +459,7 @@ polariton_levels = list(
 print(polariton_levels)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 all_evals_df = analysis_df.with_columns(
     (
         pl.col("qubit state").cast(pl.Int8)
@@ -366,7 +472,7 @@ all_evals_df = analysis_df.with_columns(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 analysis_df = pl.concat(
     JCMottAnalysis(model=test_model, level_labels=polariton_levels).analyse(
         detuning_list=detuning_list, methods=["scqubits", "npad_cpu"]
@@ -374,7 +480,7 @@ analysis_df = pl.concat(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 jc_param_form = mo.ui.batch(
     mo.md(
         r"""
@@ -410,7 +516,7 @@ jc_param_form = mo.ui.batch(
 ).form()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 pl.DataFrame(
     [
         {
@@ -423,7 +529,7 @@ pl.DataFrame(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 import cupyx
 from tqdm.notebook import tqdm
 import itertools
@@ -432,13 +538,13 @@ from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
 import polars as pl
-import plotly.express as px
 import cupy as cp
 import marimo as mo
 import scqubits as scq
 from itertools import product
 import matplotlib as mpl
 import seaborn as sns
+import seaborn.objects as so
 import cupyx.scipy.sparse as cpsparse
 import scipy.sparse as spsparse
 from copy import copy

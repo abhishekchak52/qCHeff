@@ -12,9 +12,9 @@ import qutip as qt
 import scipy.sparse as spsparse
 from more_itertools import zip_broadcast
 
-from qcheff.iswt.iswt import NPAD
-from qcheff.jaynes_cummings_hubbard.models import JCHModel, jch_scqubits_hilbertspace
-from qcheff.operators.operator_base import qcheffOperator
+from qcheff.iswt import NPAD
+from qcheff.models.jaynes_cummings_hubbard.models import JCHModel
+from qcheff.operators import qcheffOperator
 
 
 @dataclass
