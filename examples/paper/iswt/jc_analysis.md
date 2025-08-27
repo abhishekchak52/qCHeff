@@ -4,20 +4,123 @@ marimo-version: 0.8.13
 width: medium
 ---
 
+```python {.marimo name="setup"}
+import cupyx
+from tqdm.notebook import tqdm
+import itertools
+import more_itertools
+from time import sleep
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import polars as pl
+import cupy as cp
+import marimo as mo
+import scqubits as scq
+from itertools import product
+import matplotlib as mpl
+import seaborn as sns
+import seaborn.objects as so
+import cupyx.scipy.sparse as cpsparse
+import scipy.sparse as spsparse
+from copy import copy
+import qutip as qt
+import cupyx.scipy.sparse.linalg as cpla
+# Initialization code that runs before all other cells
+```
+
 ```python {.marimo}
+from qcheff.operators import qcheffOperator
+from qcheff.iswt import NPAD
+```
+
+```python {.marimo}
+from qcheff.models.jaynes_cummings.models import JCModel
+from qcheff.models.jaynes_cummings.utils import JCMottAnalysis
+```
+
+```python {.marimo column="1" hide_code="true"}
+jc_param_form = mo.ui.batch(
+    mo.md(
+        r"""
+        # Jaynes-Cummings Model Parameters
+
+        Resonator frequency range $\omega/g$ : {resonator_freq} 
+
+        Resonator detuning $\Delta/g =  (\epsilon-\omega)/g$ : {detuning}, {resonator_levels} levels.
+
+        """
+    ),
+    {
+        "resonator_freq": mo.ui.number(
+            start=5,
+            stop=10,
+            step=0.1,
+            value=5,
+        ),
+        "detuning": mo.ui.slider(
+            start=-5,
+            stop=5,
+            step=0.1,
+            value=1,
+            show_value=True,
+        ),
+        "resonator_levels": mo.ui.number(
+            start=5,
+            stop=200000000,
+            step=1,
+            value=20,
+        ),
+    },
+).form()
+
+jc_param_form
+```
+
+```python {.marimo column="2"}
 bench_df = (
     JCMottAnalysis(model=test_model, level_labels=polariton_levels)
     .benchmark(
-        methods=[
-            "NPAD (CPU)",
-            "NPAD (GPU)",
-            "scQubits",
-        ],
         num_couplings=500,
     )
     .drop("cpu_time")
     .rename({"gpu_time": "time"})
 )
+```
+
+```python {.marimo}
+mo.hstack([mo.as_html(npad_bench_plot), npad_bench_fig])
+```
+
+```python {.marimo}
+with sns.plotting_context("notebook"), sns.axes_style("ticks"):
+    npad_bench_fig, npad_bench_ax = plt.subplots(
+        1, 1, layout="constrained", figsize=(5, 7)
+    )
+
+    npad_plot = (
+        so.Plot(
+            bench_df,
+            x="Method",
+            y="time",
+            color="Method",
+        )
+        .add(so.Bar(baseline=1e-5, alpha=1, edgewidth=-0), so.Agg())
+        .add(so.Range(), so.Est())
+        .scale(y="log", color=so.Nominal(["slategray", "#0068b5", "#76b900"]))
+        .limit(y=(1e-5, 1e-1))
+        .label(y="Time (s)")
+        .on(npad_bench_ax)
+        .plot(pyplot=True)
+    )
+    npad_bench_ax.grid(axis="y")
+    npad_bench_ax.legend(
+        npad_plot._figure.legends.pop(0).legend_handles,
+        ["scQubits", "NPAD(CPU)", "NPAD(GPU)"],
+        frameon=False,
+        title="Method",
+        loc="upper left",
+    )
 ```
 
 ```python {.marimo}
@@ -36,26 +139,11 @@ npad_bench_plot = sns.catplot(
     errorbar="ci",
     err_kws={"linewidth": 1},
     capsize=0.5,
-    aspect=0.8,
+    # aspect=0.8,
 )
 npad_bench_plot.ax.set_yscale("log")
 npad_bench_plot.set_axis_labels("Subroutine", "Time (s)")
-
-npad_bench_plot
-```
-
-```python {.marimo}
-from qcheff.operators import qcheffOperator
-from qcheff.iswt import NPAD
-```
-
-```python {.marimo}
-from qcheff.models.jaynes_cummings.models import JCModel
-from qcheff.models.jaynes_cummings.utils import JCMottAnalysis
-```
-
-```python {.marimo}
-jc_param_form
+None
 ```
 
 ```python {.marimo}
@@ -140,10 +228,6 @@ jc_ax
 ```
 
 ```python {.marimo}
-npad_error_df
-```
-
-```python {.marimo}
 mott_df = (
     all_evals_df.filter(
         ((pl.col("qubit state") == 1) & (pl.col("detuning") > 0))
@@ -173,30 +257,38 @@ mott_df = (
 ```
 
 ```python {.marimo}
-mott_df.filter(pl.col("Method").eq("NPAD (CPU)")).sort(by="Level")
+mo.hstack([npad_jc_fig, npad_jch_fig])
 ```
 
 ```python {.marimo}
-(
-    so.Plot(
-        mott_df.filter(pl.col("Method").eq("NPAD (CPU)")).sort(by="Level"),
-        x="detuning",
-        y="Critical Chemical Potential",
-        color="Level",
-    )
-    .add(so.Line(linewidth=2), legend=True)
-    .plot(pyplot=True)
-)._figure
+npad_jch_fig
 ```
 
 ```python {.marimo}
-with sns.plotting_context("notebook"), sns.axes_style("ticks"):
+with (
+    sns.plotting_context("notebook"),
+    sns.axes_style("ticks"),
+    matplotlib.rc_context({"mathtext.fontset": "cm"}),
+):
     npad_jch_fig, (jch_mott_ax, jch_err_ax) = plt.subplots(
-        nrows=2,
-        sharex=True,
-        layout="constrained",
-        figsize=(5, 8),
+        nrows=2, layout="constrained", figsize=(5, 5.5)
     )
+
+    analytical_mu = test_model.critical_chemical_potential(
+        detuning_list,
+        np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[:, None],
+    ).T
+    jch_mott_ax.plot(
+        detuning_list,
+        analytical_mu,
+        markevery=5,
+        marker="x",
+        color="k",
+        lw=0,
+        markersize=5,
+        zorder=20,
+    )
+
     (
         so.Plot(
             mott_df.filter(pl.col("Method").eq("NPAD (CPU)")).sort(by="Level"),
@@ -204,27 +296,16 @@ with sns.plotting_context("notebook"), sns.axes_style("ticks"):
             y="Critical Chemical Potential",
             color="Level",
         )
-        .add(so.Line(linewidth=2), legend=False)
-        .scale(color="Blues_r")
+        .add(so.Line(linewidth=1), legend=False)
+        .scale(
+            color="Blues_r",
+            x=so.Continuous().tick(every=5),
+            y=so.Continuous(trans="symlog0.01").tick(every=0.1),
+        )
+        .limit(x=more_itertools.minmax(detuning_list))
+        .label(x=r"$\Delta/g$", y=r"$(\mu-\omega)/g$")
         .on(jch_mott_ax)
         .plot(pyplot=True)
-    )
-
-    jch_mott_ax.plot(
-        detuning_list,
-        test_model.critical_chemical_potential(
-            detuning_list,
-            np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[:, None],
-        ).T,
-        markevery=5,
-        marker="x",
-        color="k",
-        lw=0,
-        markersize=5,
-    )
-    jch_mott_ax.set(
-        xlim=more_itertools.minmax(detuning_list),
-        xlabel=r"$\Delta/g$",
     )
     _legend_elements = [
         plt.Line2D([0], [0], color="k", lw=1, label="Numerical"),
@@ -239,25 +320,23 @@ with sns.plotting_context("notebook"), sns.axes_style("ticks"):
             markersize=5,
         ),
     ]
-    jch_mott_ax.legend(
-        handles=_legend_elements,
-        frameon=False,
-        loc="lower right",
-    )
-    jch_mott_ax.set(ylabel=r"$(\mu-\omega)/g$")
+    jch_mott_ax.legend(handles=_legend_elements, frameon=False, loc="lower right")
 
     jch_error_plot = (
         so.Plot(npad_error_df, x="detuning", y="Error", color="Method")
         .add(so.Band(), so.Est(errorbar="ci"), legend=False)
         .add(so.Line(), so.Agg("mean"))
-        .scale(color=so.Nominal(["slategray", "#76B900"]))
+        .scale(
+            color=so.Nominal(["slategray", "#76B900"]),
+            x=so.Continuous().tick(every=5.0),
+        )
         .on(jch_err_ax)
         .plot(pyplot=True)
     )
     jch_err_ax.set(
         xlim=more_itertools.minmax(detuning_list),
         yscale="log",
-        ylim=(5e-15, 2e-12),
+        ylim=(5e-15, 1e-12),
         xlabel=r"$\Delta/g$",
         ylabel="Relative Error",
     )
@@ -268,20 +347,8 @@ with sns.plotting_context("notebook"), sns.axes_style("ticks"):
         ["scQubits", "NPAD"],
         frameon=False,
         title="Method",
-        loc="upper center",
-        ncols=2,
+        loc="center right",
     )
-    # sns.despine(npad_jch_fig)
-
-npad_jch_fig
-```
-
-```python {.marimo}
-npad_error_df
-```
-
-```python {.marimo}
-
 ```
 
 ```python {.marimo}
@@ -359,8 +426,6 @@ with sns.plotting_context("paper"):
         ylabel="Relative Error",
     )
     sns.despine(npad_jc_fig)
-# mo.mpl.interactive(npad_jc_fig)
-npad_jc_fig
 ```
 
 ```python {.marimo}
@@ -461,42 +526,6 @@ analysis_df = pl.concat(
 ```
 
 ```python {.marimo}
-jc_param_form = mo.ui.batch(
-    mo.md(
-        r"""
-        # Jaynes-Cummings Model Parameters
-
-        Resonator frequency range $\omega/g$ : {resonator_freq} 
-
-        Resonator detuning $\Delta/g =  (\epsilon-\omega)/g$ : {detuning}, {resonator_levels} levels.
-
-        """
-    ),
-    {
-        "resonator_freq": mo.ui.number(
-            start=5,
-            stop=10,
-            step=0.1,
-            value=5,
-        ),
-        "detuning": mo.ui.slider(
-            start=-5,
-            stop=5,
-            step=0.1,
-            value=1,
-            show_value=True,
-        ),
-        "resonator_levels": mo.ui.number(
-            start=5,
-            stop=200000000,
-            step=1,
-            value=20,
-        ),
-    },
-).form()
-```
-
-```python {.marimo}
 pl.DataFrame(
     [
         {
@@ -507,27 +536,4 @@ pl.DataFrame(
         for level in polariton_levels
     ],
 )
-```
-
-```python {.marimo}
-import cupyx
-from tqdm.notebook import tqdm
-import itertools
-import more_itertools
-from time import sleep
-import numpy as np
-import matplotlib.pyplot as plt
-import polars as pl
-import cupy as cp
-import marimo as mo
-import scqubits as scq
-from itertools import product
-import matplotlib as mpl
-import seaborn as sns
-import seaborn.objects as so
-import cupyx.scipy.sparse as cpsparse
-import scipy.sparse as spsparse
-from copy import copy
-import qutip as qt
-import cupyx.scipy.sparse.linalg as cpla
 ```
