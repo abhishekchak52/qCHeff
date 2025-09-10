@@ -30,6 +30,10 @@ import cupyx.scipy.sparse.linalg as cpla
 ```
 
 ```python {.marimo}
+import altair as alt
+```
+
+```python {.marimo}
 from qcheff.operators import qcheffOperator
 from qcheff.iswt import NPAD
 ```
@@ -89,13 +93,9 @@ bench_df = (
 ```
 
 ```python {.marimo}
-mo.hstack([mo.as_html(npad_bench_plot), npad_bench_fig])
-```
-
-```python {.marimo}
 with sns.plotting_context("notebook"), sns.axes_style("ticks"):
     npad_bench_fig, npad_bench_ax = plt.subplots(
-        1, 1, layout="constrained", figsize=(5, 7)
+        1, 1, layout="constrained", figsize=(4, 5)
     )
 
     npad_plot = (
@@ -108,7 +108,7 @@ with sns.plotting_context("notebook"), sns.axes_style("ticks"):
         .add(so.Bar(baseline=1e-5, alpha=1, edgewidth=-0), so.Agg())
         .add(so.Range(), so.Est())
         .scale(y="log", color=so.Nominal(["slategray", "#0068b5", "#76b900"]))
-        .limit(y=(1e-5, 1e-1))
+        .limit(y=(1e-5, 1e-3))
         .label(y="Time (s)")
         .on(npad_bench_ax)
         .plot(pyplot=True)
@@ -121,12 +121,10 @@ with sns.plotting_context("notebook"), sns.axes_style("ticks"):
         title="Method",
         loc="upper left",
     )
-```
-
-```python {.marimo}
+    
 npad_bench_plot = sns.catplot(
     bench_df,
-    kind="bar",
+    kind="point",
     hue_order=["scQubits", "NPAD (CPU)", "NPAD (GPU)"],
     palette={
         "scQubits": "slategray",
@@ -137,13 +135,14 @@ npad_bench_plot = sns.catplot(
     y="time",
     hue="Method",
     errorbar="ci",
-    err_kws={"linewidth": 1},
+    # err_kws={"linewidth": 1},
     capsize=0.5,
+    
     # aspect=0.8,
 )
 npad_bench_plot.ax.set_yscale("log")
 npad_bench_plot.set_axis_labels("Subroutine", "Time (s)")
-None
+mo.hstack([npad_bench_plot, npad_bench_fig], widths="equal")
 ```
 
 ```python {.marimo}
@@ -160,7 +159,9 @@ detuning_dict = {"detuning": detuning_list}
 
 
 def update_jch_detuning(param_sweep, detuning):
-    param_sweep.hilbertspace["q"].E_osc = param_sweep.hilbertspace["r"].E_osc - detuning
+    param_sweep.hilbertspace["q"].E_osc = (
+        param_sweep.hilbertspace["r"].E_osc - detuning
+    )
 
 
 jch_paramsweep = scq.ParameterSweep(
@@ -177,7 +178,9 @@ jch_evals = (
         pl.DataFrame(
             detuning_dict
             | {
-                "".join(map(str, label)): jch_paramsweep.energy_by_bare_index(label)
+                "".join(map(str, label)): jch_paramsweep.energy_by_bare_index(
+                    label
+                )
                 for label in polariton_levels
             }
         )
@@ -200,9 +203,10 @@ jch_evals = (
         ),
     )
     .with_columns(
-        (pl.col("energy") - pl.col("polariton_number") * (test_hs["r"].E_osc)).alias(
-            "corrected_energy"
-        )
+        (
+            pl.col("energy")
+            - pl.col("polariton_number") * (test_hs["r"].E_osc)
+        ).alias("corrected_energy")
     )
 )
 ```
@@ -233,11 +237,15 @@ mott_df = (
         ((pl.col("qubit state") == 1) & (pl.col("detuning") > 0))
         | ((pl.col("qubit state") == 0) & (pl.col("detuning") < 0))
     )
-    .pivot(on="polariton_number", index=["detuning", "Method"], values="energy")
+    .pivot(
+        on="polariton_number", index=["detuning", "Method"], values="energy"
+    )
     .with_columns(
         ((pl.col("1") - (test_hs["r"].E_osc)).alias("0")),
         *(
-            (pl.col(str(j)) - pl.col(str(i)) - (test_hs["r"].E_osc)).alias(f"{i}")
+            (pl.col(str(j)) - pl.col(str(i)) - (test_hs["r"].E_osc)).alias(
+                f"{i}"
+            )
             for i, j in itertools.pairwise(
                 range(1, max(itertools.chain(*polariton_levels)))
             )
@@ -276,7 +284,9 @@ with (
 
     analytical_mu = test_model.critical_chemical_potential(
         detuning_list,
-        np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[:, None],
+        np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[
+            :, None
+        ],
     ).T
     jch_mott_ax.plot(
         detuning_list,
@@ -320,7 +330,9 @@ with (
             markersize=5,
         ),
     ]
-    jch_mott_ax.legend(handles=_legend_elements, frameon=False, loc="lower right")
+    jch_mott_ax.legend(
+        handles=_legend_elements, frameon=False, loc="lower right"
+    )
 
     jch_error_plot = (
         so.Plot(npad_error_df, x="detuning", y="Error", color="Method")
@@ -374,7 +386,9 @@ with sns.plotting_context("paper"):
         detuning_list,
         test_model.critical_chemical_potential(
             detuning_list,
-            np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[:, None],
+            np.array(range(1, max(itertools.chain(*polariton_levels)) - 1))[
+                :, None
+            ],
         ).T,
         markevery=5,
         marker="x",
@@ -450,7 +464,11 @@ npad_error_df = (
     )
     .with_columns(
         (
-            (pl.col("NPAD (CPU)").sub(pl.col("theory")).truediv(pl.col("scQubits")))
+            (
+                pl.col("NPAD (CPU)")
+                .sub(pl.col("theory"))
+                .truediv(pl.col("scQubits"))
+            )
             .abs()
             .rolling_mean(
                 window_size=10,
@@ -459,7 +477,11 @@ npad_error_df = (
             .alias("NPAD Error")
         ),
         (
-            (pl.col("scQubits").sub(pl.col("theory")).truediv(pl.col("scQubits")))
+            (
+                pl.col("scQubits")
+                .sub(pl.col("theory"))
+                .truediv(pl.col("scQubits"))
+            )
             .abs()
             .rolling_mean(
                 window_size=10,
@@ -500,7 +522,9 @@ test_NPAD.H.couplings()
 
 ```python {.marimo}
 polariton_levels = list(
-    more_itertools.flatten(([(0, 0)], *(((1, i), (0, i + 1)) for i in range(10))))
+    more_itertools.flatten(
+        ([(0, 0)], *(((1, i), (0, i + 1)) for i in range(10)))
+    )
 )
 print(polariton_levels)
 ```
@@ -508,12 +532,13 @@ print(polariton_levels)
 ```python {.marimo}
 all_evals_df = analysis_df.with_columns(
     (
-        pl.col("qubit state").cast(pl.Int8) + pl.col("resonator state").cast(pl.Int8)
+        pl.col("qubit state").cast(pl.Int8)
+        + pl.col("resonator state").cast(pl.Int8)
     ).alias("polariton_number"),
 ).with_columns(
-    (pl.col("energy") - pl.col("polariton_number") * (test_hs["r"].E_osc)).alias(
-        "corrected_energy"
-    )
+    (
+        pl.col("energy") - pl.col("polariton_number") * (test_hs["r"].E_osc)
+    ).alias("corrected_energy")
 )
 ```
 

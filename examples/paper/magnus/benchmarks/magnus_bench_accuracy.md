@@ -38,7 +38,11 @@ rng = np.random.default_rng()
 ```
 
 ```python {.marimo}
-from magnus_benchmark_utils import bench_magnus, magnus_bench_report, measure_accuracy
+from magnus_benchmark_utils import (
+    bench_magnus,
+    magnus_bench_report,
+    measure_accuracy,
+)
 ```
 
 ```python {.marimo}
@@ -85,14 +89,20 @@ magnus_states[:3]
 qutip_pops = list(
     map(lambda x: qt.expect(allzero_state.proj(), x), test_res.states[1:])
 )
-magnus_pops = list(map(lambda x: qt.expect(allzero_state.proj(), x), magnus_states))
+magnus_pops = list(
+    map(lambda x: qt.expect(allzero_state.proj(), x), magnus_states)
+)
 ```
 
 ```python {.marimo}
-def measure_accuracy_both(pulse_coeffs, sample_num_list: tuple[float, ...], **kwargs):
+def measure_accuracy_both(
+    pulse_coeffs, sample_num_list: tuple[float, ...], **kwargs
+):
     chain_size = kwargs.get("chain_size", 3)
 
-    allzero_state = qt.basis(dimensions=[2] * chain_size, n=[0] * chain_size).unit()
+    allzero_state = qt.basis(
+        dimensions=[2] * chain_size, n=[0] * chain_size
+    ).unit()
 
     sim_options = ChainMap(dict(num_tlist=max(sample_num_list)), kwargs)
 
@@ -148,7 +158,7 @@ accuracy_data = measure_accuracy_both(
 # accuracy_data
 ```
 
-```python {.marimo}
+```python {.marimo disabled="true"}
 manypulse_accuracy_data = list(
     measure_accuracy_both(
         pulse_coeffs=_coeffs,
@@ -208,14 +218,18 @@ test_pulses_coeff[0]
 ```python {.marimo}
 def calculate_overlaps(result, reference):
     overlap_funcs = [qt.hilbert_dist, qt.fidelity, qt.hellinger_dist]
-    overlap_dict = {func.__name__: func(result, reference) for func in overlap_funcs}
+    overlap_dict = {
+        func.__name__: func(result, reference) for func in overlap_funcs
+    }
     return overlap_dict
 ```
 
 ```python {.marimo}
 def calculate_overlap_with_final_state(states):
     final_state = states[-1]
-    return [calculate_overlaps(state, reference=final_state) for state in states]
+    return [
+        calculate_overlaps(state, reference=final_state) for state in states
+    ]
 ```
 
 ```python {.marimo}
@@ -223,8 +237,12 @@ overlap_data = (
     pl.DataFrame(
         {
             "num_points": accuracy_data["num_points"],
-            "qutip": calculate_overlap_with_final_state(accuracy_data["qutip"]),
-            "magnus": calculate_overlap_with_final_state(accuracy_data["magnus"]),
+            "qutip": calculate_overlap_with_final_state(
+                accuracy_data["qutip"]
+            ),
+            "magnus": calculate_overlap_with_final_state(
+                accuracy_data["magnus"]
+            ),
         }
     )
     .unpivot(index="num_points", variable_name="method", value_name="overlaps")
@@ -245,7 +263,9 @@ overlap_data_long
 
 ```python {.marimo}
 with sns.axes_style("ticks"), sns.plotting_context("notebook"):
-    accuracy_fig, accuracy_ax = plt.subplots(1, 1, layout="constrained", figsize=(5, 4))
+    accuracy_fig, accuracy_ax = plt.subplots(
+        1, 1, layout="constrained", figsize=(5, 4)
+    )
 
     acc_plot = (
         so.Plot(
@@ -258,7 +278,9 @@ with sns.axes_style("ticks"), sns.plotting_context("notebook"):
         .add(so.Line(), so.Agg("mean"))
         .scale(x="log", y="log", color=["slategray", "#76B900"])
         .limit(x=(10, 10000), y=(1e-14, 10))
-        .label(x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error")
+        .label(
+            x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error"
+        )
         .on(accuracy_ax)
         .plot(pyplot=True)
     )
@@ -401,7 +423,12 @@ list(
     map(
         lambda x: qt.hilbert_dist(x[0], x[1]),
         itertools.combinations(
-            (magnus_cpu_final_state, magnus_gpu_final_state, qutip_final_state), 2
+            (
+                magnus_cpu_final_state,
+                magnus_gpu_final_state,
+                qutip_final_state,
+            ),
+            2,
         ),
     )
 )
@@ -496,7 +523,7 @@ magnus_param_form
 
 ```python {.marimo}
 mo.stop(not magnus_param_form.value, "Submit form to continue")
-chain_size_list = [7, 8, 9]
+chain_size_list = [5, 6, 7, 8]
 bench_df = bench_magnus(
     pulse_coeffs=np.array(
         [
@@ -523,4 +550,44 @@ bench_plot = magnus_bench_report(bench_df)
 sns.move_legend(bench_plot, loc="upper center")
 bench_plot.set_axis_labels("Matrix Dimension")
 bench_plot.set_xticklabels((rf"$2^{i}$" for i in chain_size_list))
+```
+
+```python {.marimo}
+bench_df
+```
+
+```python {.marimo}
+with sns.axes_style("ticks"), sns.plotting_context("notebook"):
+    magnus_bench_fig, magnus_bench_ax = plt.subplots(
+        figsize=(6, 4), layout="constrained"
+    )
+
+    magplot = (
+        so.Plot(
+            bench_df, x="chain_size", y="time", color="Method", marker="Method"
+        )
+        .add(so.Dots(alpha=0.5, pointsize=7))
+        .add(so.Line(alpha=1, marker=False), so.Agg())
+        .scale(
+            x=so.Continuous().tick(every=1).label(like="$2^{x:g}$"),
+            y=so.Continuous(trans="log").label(like="{x:.3g}"),
+            color=so.Nominal(
+                {
+                    "QuTiP": "slategray",
+                    "Magnus (CPU)": "#127cc1",
+                    "Magnus (GPU)": "#76b900",
+                }
+            ),
+            marker=so.Nominal(["s", "v", "^"]),
+        )
+        .limit(x=more_itertools.minmax(chain_size_list))
+        .label(x="Matrix Dimension", y="Time (s)")
+        .on(magnus_bench_ax)
+        .plot(pyplot=True)
+    )
+    magnus_bench_ax.grid(axis="y")
+    _legend = magplot._figure.legends[0]
+    _legend.set_frame_on(False)
+    _legend.set_bbox_to_anchor((0.98, 0.35))
+magnus_bench_fig
 ```
