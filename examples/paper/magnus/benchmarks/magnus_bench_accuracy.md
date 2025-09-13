@@ -158,7 +158,7 @@ accuracy_data = measure_accuracy_both(
 # accuracy_data
 ```
 
-```python {.marimo disabled="true"}
+```python {.marimo}
 manypulse_accuracy_data = list(
     measure_accuracy_both(
         pulse_coeffs=_coeffs,
@@ -276,7 +276,7 @@ with sns.axes_style("ticks"), sns.plotting_context("notebook"):
         )
         .add(so.Dots(alpha=0.1), legend=False)
         .add(so.Line(), so.Agg("mean"))
-        .scale(x="log", y="log", color=["slategray", "#76B900"])
+        .scale(x="log", y="log", color=["darkgray", "#76B900"])
         .limit(x=(10, 10000), y=(1e-14, 10))
         .label(
             x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error"

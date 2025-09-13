@@ -30,10 +30,6 @@ import cupyx.scipy.sparse.linalg as cpla
 ```
 
 ```python {.marimo}
-import altair as alt
-```
-
-```python {.marimo}
 from qcheff.operators import qcheffOperator
 from qcheff.iswt import NPAD
 ```
@@ -339,7 +335,7 @@ with (
         .add(so.Band(), so.Est(errorbar="ci"), legend=False)
         .add(so.Line(), so.Agg("mean"))
         .scale(
-            color=so.Nominal(["slategray", "#76B900"]),
+            color=so.Nominal(["darkslategray", "#76B900"]),
             x=so.Continuous().tick(every=5.0),
         )
         .on(jch_err_ax)
