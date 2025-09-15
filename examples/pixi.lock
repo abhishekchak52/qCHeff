@@ -75,7 +75,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2f/57/6bffd4b20b88da3800c5d691e0337761576ee688eb01299eae865689d2df/jupyter_core-5.8.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e9/e9/f218a2cb3a9ffbe324ca29a9e399fa2d2866d7f348ec3a88df87fc248fc5/kiwisolver-1.4.9-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/98/6e/6507d029efe5caa9b4453812afcf4f294925a7723427d75c6c35075782e6/loro-1.6.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/9b/c8/8694fe4a5b23bf49e4c54931ff985ad587ff53acfadd4a8a7e6bd6a4c36c/marimo-0.15.4-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/4c/97/4bfb1eaf08af0aa41851ebc207f1813ca8423067a1382a61c11472599693/marimo-0.15.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/70/ae/44c4a6a4cbb496d93c6257954260fe3a6e91b7bed2240e5dad2a717f5111/markdown-3.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e5/b8/9eea6630198cb303d131d95d285a024b3b8645b1763a2916fddb44ca8760/matplotlib-3.10.6-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/8f/8e/9ad090d3553c280a8060fbf6e24dc1c0c29704ee7d1c372f0c174aa59285/matplotlib_inline-0.1.7-py3-none-any.whl
@@ -948,10 +948,10 @@ packages:
   version: 1.6.0
   sha256: 52ddc2121aca2c4d8922f8cd6301b53c485369056da38db96e301a0b46c35659
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/9b/c8/8694fe4a5b23bf49e4c54931ff985ad587ff53acfadd4a8a7e6bd6a4c36c/marimo-0.15.4-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/4c/97/4bfb1eaf08af0aa41851ebc207f1813ca8423067a1382a61c11472599693/marimo-0.15.5-py3-none-any.whl
   name: marimo
-  version: 0.15.4
-  sha256: f77d2279c79d76028119f1007220782f7c142143afc359efacdd1e9839da2d6b
+  version: 0.15.5
+  sha256: 87a8c7f4023c40c91d229ea8edb038dcb13eca41c4c3e074050a863ed39b2770
   requires_dist:
   - click>=8.0,<9
   - jedi>=0.18.0

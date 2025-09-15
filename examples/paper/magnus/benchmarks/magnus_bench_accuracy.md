@@ -89,20 +89,14 @@ magnus_states[:3]
 qutip_pops = list(
     map(lambda x: qt.expect(allzero_state.proj(), x), test_res.states[1:])
 )
-magnus_pops = list(
-    map(lambda x: qt.expect(allzero_state.proj(), x), magnus_states)
-)
+magnus_pops = list(map(lambda x: qt.expect(allzero_state.proj(), x), magnus_states))
 ```
 
 ```python {.marimo}
-def measure_accuracy_both(
-    pulse_coeffs, sample_num_list: tuple[float, ...], **kwargs
-):
-    chain_size = kwargs.get("chain_size", 3)
+def measure_accuracy_both(pulse_coeffs, sample_num_list: tuple[float, ...], **kwargs):
+    chain_size = kwargs.get("chain_size")
 
-    allzero_state = qt.basis(
-        dimensions=[2] * chain_size, n=[0] * chain_size
-    ).unit()
+    allzero_state = qt.basis(dimensions=[2] * chain_size, n=[0] * chain_size).unit()
 
     sim_options = ChainMap(dict(num_tlist=max(sample_num_list)), kwargs)
 
@@ -138,6 +132,8 @@ def measure_accuracy_both(
         )
 
     final_states = {
+        "chain_size": chain_size,
+        "pulse_frequency": kwargs.get("pulse_freq"),
         "pulse_coeffs": pulse_coeffs,
         "num_points": sample_num_list,
         "magnus": list(map(magnus_final_state, sample_num_list)),
@@ -160,7 +156,7 @@ accuracy_data = measure_accuracy_both(
 
 ```python {.marimo}
 manypulse_overlap_data_long = manypulse_overlap_data.drop("fidelity").unpivot(
-    index=["num_points", "method", "pulse_coeffs"],
+    index=["num_points", "method"],
     variable_name="metric",
     value_name="metric_value",
 )
@@ -170,18 +166,14 @@ manypulse_overlap_data_long
 ```python {.marimo}
 def calculate_overlaps(result, reference):
     overlap_funcs = [qt.hilbert_dist, qt.fidelity, qt.hellinger_dist]
-    overlap_dict = {
-        func.__name__: func(result, reference) for func in overlap_funcs
-    }
+    overlap_dict = {func.__name__: func(result, reference) for func in overlap_funcs}
     return overlap_dict
 ```
 
 ```python {.marimo}
 def calculate_overlap_with_final_state(states):
     final_state = states[-1]
-    return [
-        calculate_overlaps(state, reference=final_state) for state in states
-    ]
+    return [calculate_overlaps(state, reference=final_state) for state in states]
 ```
 
 ```python {.marimo}
@@ -189,12 +181,8 @@ overlap_data = (
     pl.DataFrame(
         {
             "num_points": accuracy_data["num_points"],
-            "qutip": calculate_overlap_with_final_state(
-                accuracy_data["qutip"]
-            ),
-            "magnus": calculate_overlap_with_final_state(
-                accuracy_data["magnus"]
-            ),
+            "qutip": calculate_overlap_with_final_state(accuracy_data["qutip"]),
+            "magnus": calculate_overlap_with_final_state(accuracy_data["magnus"]),
         }
     )
     .unpivot(index="num_points", variable_name="method", value_name="overlaps")
@@ -215,24 +203,21 @@ overlap_data_long
 
 ```python {.marimo column="1" hide_code="true"}
 with sns.axes_style("ticks"), sns.plotting_context("notebook"):
-    accuracy_fig, accuracy_ax = plt.subplots(
-        1, 1, layout="constrained", figsize=(5, 4)
-    )
+    accuracy_fig, accuracy_ax = plt.subplots(1, 1, layout="constrained", figsize=(5, 4))
 
     acc_plot = (
         so.Plot(
-            manypulse_overlap_data.drop("pulse_coeffs").sort("num_points"),
+            manypulse_overlap_data.sort("num_points"),
             x="num_points",
-            y="infidelity",
+            y="hilbert_dist",
             color="method",
         )
-        .add(so.Dots(alpha=0.5), legend=False)
-        .add(so.Line(), so.Agg("median"))
-        .scale(x="log", y="log", color=["darkgray", "#76B900"])
-        .limit(x=more_itertools.minmax(num_tpts_list), y=(1e-14, 10))
-        .label(
-            x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error"
-        )
+        .add(so.Dots(alpha=0.1), legend=False)
+        .add(so.Line(), so.Agg("mean"))
+        .add(so.Range(), so.Est(errorbar="se"))
+        .scale(x="log", y="log", color=["darkslategray", "#76B900"])
+        .limit(x=(10, 10000), y=(1e-20, 10))
+        .label(x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error")
         .on(accuracy_ax)
         .plot(pyplot=True)
     )
@@ -246,32 +231,38 @@ with sns.axes_style("ticks"), sns.plotting_context("notebook"):
 accuracy_fig
 ```
 
+```python {.marimo disabled="true"}
+accuracy_fig.savefig("magnus_err.pdf")
+```
+
 ```python {.marimo}
-test_pulses_coeff = rng.standard_normal(size=(10, 5))
-test_pulses_coeff[0]
+drive_freq_list = 2 * np.pi * np.linspace(0, 10, 20)
 ```
 
 ```python {.marimo}
 manypulse_accuracy_data = list(
     measure_accuracy_both(
-        pulse_coeffs=_coeffs,
+        pulse_coeffs=test_coeffs,
         sample_num_list=num_tpts_list,
         **sim_options,
-        pulse_freq=2 * np.pi * 5,
+        pulse_freq=wd,
     )
-    for _coeffs in mo.status.progress_bar(test_pulses_coeff)
+    for wd in mo.status.progress_bar(drive_freq_list)
 )
+```
+
+```python {.marimo}
+manypulse_accuracy_data
 ```
 
 ```python {.marimo}
 manypulse_overlap_data = (
     pl.concat(
-        (
+        [
             pl.DataFrame(
                 {
-                    "pulse_coeffs": hashlib.sha1(
-                        _accuracy_data["pulse_coeffs"].tobytes()
-                    ).hexdigest(),
+                    "chain_size": _accuracy_data["chain_size"],
+                    "pulse_frequency": _accuracy_data["pulse_frequency"],
                     "num_points": _accuracy_data["num_points"],
                     "qutip": calculate_overlap_with_final_state(
                         _accuracy_data["qutip"]
@@ -282,10 +273,10 @@ manypulse_overlap_data = (
                 }
             )
             for _accuracy_data in manypulse_accuracy_data
-        )
+        ]
     )
     .unpivot(
-        index=["pulse_coeffs", "num_points"],
+        index=["chain_size", "pulse_frequency", "num_points"],
         variable_name="method",
         value_name="overlaps",
     )
@@ -293,31 +284,6 @@ manypulse_overlap_data = (
     .with_columns(infidelity=1 - pl.col("fidelity"))
 )
 manypulse_overlap_data
-```
-
-```python {.marimo}
-_test_fig, _test_ax = plt.subplots(layout="constrained", figsize=(6, 3))
-_test_system, _ = setup_magnus_chain_example(
-    pulse_coeffs=2 * test_pulses_coeff[4],
-    **sim_options,
-    pulse_freq=2 * np.pi * 4,
-)
-_test_tlist = np.linspace(0, magnus_param_form.value["gate_time"], int(1e5))
-_test_system.plot_control_signals(_test_tlist, axis=_test_ax)
-_test_ax.set(xlim=(0, _test_tlist[-1]))
-_test_fig
-```
-
-```python {.marimo}
-FourierPulse(
-    coeffs=test_pulses_coeff[0],
-    gate_time=sim_options["gate_time"],
-    frequency=2 * np.pi * 12.47,
-)
-```
-
-```python {.marimo}
-from qcheff.utils.pulses import FourierPulse
 ```
 
 ```python {.marimo column="2" hide_code="true"}
@@ -384,18 +350,16 @@ test_coeffs = [
 num_tpts_list = [
     10,
     20,
-    25,
     50,
     100,
     200,
-    250,
     500,
     1000,
     2000,
     5000,
     10000,
     20000,
-    100000,
+    #     100000,
 ]
 ```
 
@@ -592,9 +556,7 @@ with sns.axes_style("ticks"), sns.plotting_context("notebook"):
     )
 
     magplot = (
-        so.Plot(
-            bench_df, x="chain_size", y="time", color="Method", marker="Method"
-        )
+        so.Plot(bench_df, x="chain_size", y="time", color="Method", marker="Method")
         .add(so.Dots(alpha=0.5, pointsize=7))
         .add(so.Line(alpha=1, marker=False), so.Agg())
         .scale(

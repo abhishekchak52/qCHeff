@@ -104,7 +104,7 @@ with sns.plotting_context("talk"), mpl.rc_context({"mathtext.fontset": "cm"}):
 bloch_fig
 ```
 
-```python {.marimo}
+```python {.marimo disabled="true"}
 bloch_fig.savefig("magnus_rwa.pdf")
 ```
 
@@ -168,9 +168,7 @@ magnus_expect = qt.expect(pauli_eops, magnus_states)
 ```
 
 ```python {.marimo}
-def create_single_spin_RWA_system(
-    drive_coeffs: list[float], gate_time: float = 10.0
-):
+def create_single_spin_RWA_system(drive_coeffs: list[float], gate_time: float = 10.0):
     drift_ham = qt.Qobj(np.zeros((2, 2)))  # qubit frequency = 1
     control_sigs = [
         FourierPulse(
@@ -186,9 +184,7 @@ def create_single_spin_RWA_system(
     return system
 
 
-def create_single_spin_full_system(
-    drive_coeffs: list[float], gate_time: float = 10.0
-):
+def create_single_spin_full_system(drive_coeffs: list[float], gate_time: float = 10.0):
     drift_ham = qt.Qobj(np.zeros((2, 2)))  # qubit frequency = 1
     control_sigs = [
         # sigx term
