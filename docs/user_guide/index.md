@@ -4,9 +4,9 @@
 :hidden:
 
 install
+operators_user_guide
 iswt_user_guide
 magnus_user_guide
-operators
 ```
 
 This is the User guide. 

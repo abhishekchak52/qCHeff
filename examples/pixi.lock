@@ -75,7 +75,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2f/57/6bffd4b20b88da3800c5d691e0337761576ee688eb01299eae865689d2df/jupyter_core-5.8.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e9/e9/f218a2cb3a9ffbe324ca29a9e399fa2d2866d7f348ec3a88df87fc248fc5/kiwisolver-1.4.9-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/98/6e/6507d029efe5caa9b4453812afcf4f294925a7723427d75c6c35075782e6/loro-1.6.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/97/bb/e922181c69207b3eea4717f74fcdf806b4a5669caa7e31b0b7a9c5e30c1b/marimo-0.15.3-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/9b/c8/8694fe4a5b23bf49e4c54931ff985ad587ff53acfadd4a8a7e6bd6a4c36c/marimo-0.15.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/70/ae/44c4a6a4cbb496d93c6257954260fe3a6e91b7bed2240e5dad2a717f5111/markdown-3.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e5/b8/9eea6630198cb303d131d95d285a024b3b8645b1763a2916fddb44ca8760/matplotlib-3.10.6-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/8f/8e/9ad090d3553c280a8060fbf6e24dc1c0c29704ee7d1c372f0c174aa59285/matplotlib_inline-0.1.7-py3-none-any.whl
@@ -948,10 +948,10 @@ packages:
   version: 1.6.0
   sha256: 52ddc2121aca2c4d8922f8cd6301b53c485369056da38db96e301a0b46c35659
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/97/bb/e922181c69207b3eea4717f74fcdf806b4a5669caa7e31b0b7a9c5e30c1b/marimo-0.15.3-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/9b/c8/8694fe4a5b23bf49e4c54931ff985ad587ff53acfadd4a8a7e6bd6a4c36c/marimo-0.15.4-py3-none-any.whl
   name: marimo
-  version: 0.15.3
-  sha256: 199c55bbc369db64dc20a1ed98814bfea321820acdabb7e01b262fea8f46507d
+  version: 0.15.4
+  sha256: f77d2279c79d76028119f1007220782f7c142143afc359efacdd1e9839da2d6b
   requires_dist:
   - click>=8.0,<9
   - jedi>=0.18.0
@@ -1531,7 +1531,7 @@ packages:
 - pypi: ..
   name: qcheff
   version: 0.2.0
-  sha256: bedc5f78ee512c6dbf0f69269dd2668ddc27290cc16256408819619d8a0d2970
+  sha256: 374bc6713da4ff0fb5e435bcc3c699da6b9b723bcacd3c62e31e6eadd9458929
   requires_dist:
   - more-itertools>=10.4.0
   - numpy>=2.0.0

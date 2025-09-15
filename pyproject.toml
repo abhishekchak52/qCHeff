@@ -82,7 +82,7 @@ env_list = [ "docs", "lint", "format", "3.13", "3.12", "3.11" ]
 [tool.tox.env_run_base]
 description       = "run unit tests"
 dependency_groups = [ "test" ]
-extras            = [ "cupy-cuda12x", "models" ]
+extras            = [ "cupy-cuda13x", "models" ]
 commands          = [ [ "pytest" ] ]
 
 
