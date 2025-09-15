@@ -3,7 +3,7 @@ from collections.abc import Sequence
 import cupyx.scipy.sparse as cpsparse
 import scipy.sparse as spsparse
 
-from qcheff.magnus.magnus import MagnusTimeEvolDense, MagnusTimeEvolSparseLazy
+from qcheff.magnus.magnus_time_evolution import MagnusTimeEvolDense, MagnusTimeEvolSparseLazy
 from qcheff.operators import qcheffOperatorMatrix
 from qcheff.operators.operator_base import qcheff_array
 

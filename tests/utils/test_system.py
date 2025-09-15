@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import qutip as qt
 
-from qcheff.magnus.magnus import (
+from qcheff.magnus.magnus_time_evolution import (
     MagnusTimeEvolDense,
     MagnusTimeEvolSparseLazy,
 )
