@@ -4,8 +4,8 @@
 :hidden:
 
 install
-iswt
-magnus
+iswt_user_guide
+magnus_user_guide
 operators
 ```
 
