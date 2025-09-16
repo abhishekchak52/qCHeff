@@ -117,7 +117,7 @@ with sns.plotting_context("notebook"), sns.axes_style("ticks"):
         title="Method",
         loc="upper left",
     )
-    
+
 npad_bench_plot = sns.catplot(
     bench_df,
     kind="point",
@@ -133,7 +133,6 @@ npad_bench_plot = sns.catplot(
     errorbar="ci",
     # err_kws={"linewidth": 1},
     capsize=0.5,
-    
     # aspect=0.8,
 )
 npad_bench_plot.ax.set_yscale("log")
@@ -266,6 +265,10 @@ mo.hstack([npad_jc_fig, npad_jch_fig])
 
 ```python {.marimo}
 npad_jch_fig
+```
+
+```python {.marimo disabled="true"}
+npad_jch_fig.savefig("npad_new.pdf")
 ```
 
 ```python {.marimo}

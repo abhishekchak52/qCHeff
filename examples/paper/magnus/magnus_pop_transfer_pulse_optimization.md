@@ -150,8 +150,13 @@ labels = [
     r"$P_{|1^{\otimes n}\rangle}$",
     r"$P_{\rm rest}$",
 ]
-with sns.plotting_context("notebook"):
-    fig, ax = plt.subplots(2, 1, figsize=(6, 7), layout="constrained", sharex=True)
+with (
+    sns.plotting_context("notebook"),
+    mpl.rc_context({"mathtext.fontset": "cm"}),
+):
+    fig, ax = plt.subplots(
+        2, 1, figsize=(5, 5.5), layout="constrained", sharex=True
+    )
     for sig, lc, ls in zip(
         test_system.control_sigs,
         ["xkcd:tomato red", "xkcd:pinkish orange"],
@@ -183,7 +188,7 @@ with sns.plotting_context("notebook"):
             test_magnus.tlist,
             pop,
             # label=label + " (QuTiP)",
-            markevery=10,
+            markevery=50,
             marker="+",
             lw=0,
             color="black",
@@ -197,9 +202,9 @@ with sns.plotting_context("notebook"):
     )
     ax[0].set(ylim=(-0.5, 0.5))
     ax[0].legend(
-        fontsize=12,
+        fontsize=15,
         frameon=False,
-        labels=[r"$u^{(k)}(x)$", r"$u^{(k)}(y)$"],
+        labels=[r"$u^{x}(t)$", r"$u^{y}(t)$"],
     )
     patch = plt.Line2D(
         [0],
@@ -213,14 +218,17 @@ with sns.plotting_context("notebook"):
     )
     ax[1].legend(
         handles=[*magnus_plots, patch],
-        fontsize=10,
-        loc="center right",
+        fontsize=12,
+        # loc="center left",
         frameon=False,
-        title="Populations",
     )
     infidelity = 1 - qt.expect(P1, test_states[-1])
-    fig.suptitle(f"Chain size: N={chain_size}, Error: {infidelity:.3e}")
+    fig.suptitle(f"Chain size: N={chain_size}, Error: {infidelity:.2e}")
 fig
+```
+
+```python {.marimo}
+fig.savefig("magnus_opt.pdf")
 ```
 
 ```python {.marimo}
