@@ -1,7 +1,7 @@
 # ${\rm qCH_{eff}}$
 
-![PyPI - Version](https://img.shields.io/pypi/v/qcheff)
-![Read the Docs](https://img.shields.io/readthedocs/qcheff)
+[![PyPI - Version](https://img.shields.io/pypi/v/qcheff)](https://pypi.org/project/qcheff/)
+[![Read the Docs](https://img.shields.io/readthedocs/qcheff)](https://qcheff.readthedocs.io/en/latest/)
 
 ${\rm qCH_{eff}}$ (/kju ʃɛf/) calculates effective Hamiltonians for quantum systems.
 
