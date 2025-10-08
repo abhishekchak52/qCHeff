@@ -218,7 +218,7 @@ overlap_data_long
 ```python {.marimo column="1" hide_code="true"}
 with sns.axes_style("ticks"), sns.plotting_context("notebook"):
     accuracy_fig, accuracy_ax = plt.subplots(
-        1, 1, layout="constrained", figsize=(4.5, 3.5)
+        1, 1, layout="constrained", figsize=(4.5, 5)
     )
 
     acc_plot = (
@@ -227,15 +227,17 @@ with sns.axes_style("ticks"), sns.plotting_context("notebook"):
             x="num_points",
             y="hilbert_dist",
             color="method",
+            marker="method",
         )
-        .add(so.Dots(alpha=0.1), legend=False)
+        .add(
+            so.Dots(alpha=0.4),
+            legend=False,
+        )
         .add(so.Line(), so.Agg("mean"))
-        .add(so.Range(), so.Est(errorbar="se"))
-        .scale(x="log", y="log", color=["darkslategray", "#76B900"])
+        .add(so.Range(color="k"), so.Est(errorbar="ci"), legend=False)
+        .scale(x="log", y="log", color=["darkslategray", "#76B900"], marker=["x", "+"])
         .limit(x=(10, 10000), y=(1e-20, 10))
-        .label(
-            x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error"
-        )
+        .label(x="Time Points (QuTiP)/ Magnus Intervals", y=r"Final state error")
         .on(accuracy_ax)
         .plot(pyplot=True)
     )
@@ -243,9 +245,13 @@ with sns.axes_style("ticks"), sns.plotting_context("notebook"):
     accuracy_ax.legend(
         legend.legend_handles,
         [r"QuTiP Numerical Integration", r"${\rm qCH_{\rm eff}}$ Magnus"],
+        # loc="upper right",
         frameon=False,
+        # fontsize=10,
     )
     accuracy_ax.grid(axis="y")
+    accuracy_ax.axhline(5e-14, linestyle="dashed", color="gray", lw=2)
+    accuracy_ax.annotate(xy=(12, 5e-15), text="QuTiP Minimum Error", fontsize=11)
 accuracy_fig
 ```
 
@@ -254,7 +260,7 @@ accuracy_fig.savefig("magnus_err.pdf")
 ```
 
 ```python {.marimo}
-drive_freq_list = 2 * np.pi * np.linspace(0, 10, 20)
+drive_freq_list = 2 * np.pi * np.linspace(0, 10, 50)
 ```
 
 ```python {.marimo}
@@ -267,10 +273,6 @@ manypulse_accuracy_data = list(
     )
     for wd in mo.status.progress_bar(drive_freq_list)
 )
-```
-
-```python {.marimo}
-manypulse_accuracy_data
 ```
 
 ```python {.marimo}

@@ -86,6 +86,12 @@ class _QCHeffConfig:
         for option in options:
             print(f"{option}: {getattr(self, option)}")
 
+    def __str__(self):
+        return f"QCHeffConfig:\n\tbackend={self.backend}, \n\tsparse={self.sparse}, \n\tdebug={self.debug}, \n\tdefault_dtype={self.default_dtype}"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 qcheff_config = _QCHeffConfig()
 

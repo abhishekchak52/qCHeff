@@ -40,85 +40,6 @@ from qcheff.models.spin_chain.utils import (
 )
 ```
 
-```python {.marimo hide_code="true"}
-magnus_param_form = mo.ui.batch(
-    mo.md(
-        r"""
-        # Magnus Simulation Parameters
-
-        Chain size $N$: {chain_size}
-
-        Gate time $t$: {gate_time} / {num_tlist} points / {num_magnus_intervals} intervals.
-
-        Qubit frequency $\omega_q$ : {qubit_freq} GHz
-
-        NN Interaction strength $J$ : {J} GHz
-        
-        NNN Interaction strength $g$ : {g} GHz
-
-        Device: {device} 
-
-        GPU # : {gpu_id}
-        
-        Sparse: {sparse}
-        
-        """
-    ),
-    {
-        "qubit_freq": mo.ui.slider(
-            start=0.5,
-            stop=10,
-            step=0.1,
-            value=1,
-            show_value=True,
-        ),
-        "g": mo.ui.number(
-            start=0.0,
-            stop=10.0,
-            step=0.001,
-            value=0.005,
-        ),
-        "J": mo.ui.number(
-            start=0.0,
-            stop=10.0,
-            step=0.01,
-            value=0.05,
-        ),
-        "chain_size": mo.ui.number(
-            start=3,
-            stop=15,
-            step=1,
-            value=5,
-        ),
-        "gate_time": mo.ui.number(
-            start=10,
-            stop=1000,
-            step=1,
-            value=25,
-        ),
-        "num_tlist": mo.ui.number(
-            start=10,
-            stop=100000,
-            step=10,
-            value=200,
-        ),
-        "num_magnus_intervals": mo.ui.number(
-            start=10,
-            stop=100000,
-            step=10,
-            value=100,
-        ),
-        "device": mo.ui.radio(
-            options=["cpu", "gpu"],
-            value="gpu",
-        ),
-        "gpu_id": mo.ui.number(start=0, stop=7, step=1, value=0),
-        "sparse": mo.ui.checkbox(value=False),
-    },
-).form()
-magnus_param_form
-```
-
 ```python {.marimo}
 manual_coeffs = res.x
 # manual_coeffs = np.random.random(size=10)
@@ -142,89 +63,6 @@ test_system, test_magnus = setup_magnus_chain_example(
 
 ```python {.marimo}
 type(test_magnus)
-```
-
-```python {.marimo hide_code="true"}
-labels = [
-    r"$P_{|0^{\otimes n}\rangle}$",
-    r"$P_{|1^{\otimes n}\rangle}$",
-    r"$P_{\rm rest}$",
-]
-with (
-    sns.plotting_context("notebook"),
-    mpl.rc_context({"mathtext.fontset": "cm"}),
-):
-    fig, ax = plt.subplots(
-        2, 1, figsize=(5, 5.5), layout="constrained", sharex=True
-    )
-    for sig, lc, ls in zip(
-        test_system.control_sigs,
-        ["xkcd:tomato red", "xkcd:pinkish orange"],
-        ["-", "--"],
-    ):
-        ax[0].plot(
-            test_magnus.tlist,
-            sig(test_magnus.tlist),
-            label=sig.name,
-            ls=ls,
-            color=lc,
-            lw=3,
-        )
-        ax[0].set(ylim=(-1, 1))
-        ax[0].set_ylabel("Amplitude")
-
-    magnus_plots = [
-        ax[1].plot(mag_tlist, pop, label=label, lw=2, color=lc, ls=ls)[0]
-        for pop, label, lc, ls in zip(
-            pops,
-            labels,
-            ["xkcd:darkish blue", "xkcd:ultramarine blue", "xkcd:water blue"],
-            ["-", "-.", ":"],
-        )
-    ]
-
-    for pop, label in zip(qutip_pops, labels):
-        ax[1].plot(
-            test_magnus.tlist,
-            pop,
-            # label=label + " (QuTiP)",
-            markevery=50,
-            marker="+",
-            lw=0,
-            color="black",
-        )
-
-    ax[1].set(
-        xlim=test_magnus.tlims,
-        xlabel="Time (ns)",
-        ylabel="Population",
-        ylim=(0, 1),
-    )
-    ax[0].set(ylim=(-0.5, 0.5))
-    ax[0].legend(
-        fontsize=15,
-        frameon=False,
-        labels=[r"$u^{x}(t)$", r"$u^{y}(t)$"],
-    )
-    patch = plt.Line2D(
-        [0],
-        [0],
-        marker="+",
-        color="k",
-        label="QuTiP",
-        markerfacecolor="k",
-        lw=0,
-        markersize=10,
-    )
-    ax[1].legend(
-        handles=[*magnus_plots, patch],
-        fontsize=12,
-        # loc="center left",
-        frameon=False,
-    )
-    infidelity = 1 - qt.expect(P1, test_states[-1])
-    fig.suptitle(f"Chain size: N={chain_size}, Error: {infidelity:.2e}")
-fig
 ```
 
 ```python {.marimo}
@@ -307,15 +145,186 @@ def func2opt(x, lgm: float = 1e3):
 rng = np.random.default_rng()
 ```
 
+```python {.marimo column="1" hide_code="true"}
+magnus_param_form = mo.ui.batch(
+    mo.md(
+        r"""
+        # Magnus Simulation Parameters
+
+        Chain size $N$: {chain_size}
+
+        Gate time $t$: {gate_time} / {num_tlist} points / {num_magnus_intervals} intervals.
+
+        Qubit frequency $\omega_q$ : {qubit_freq} GHz
+
+        NN Interaction strength $J$ : {J} GHz
+        
+        NNN Interaction strength $g$ : {g} GHz
+
+        Device: {device} 
+
+        GPU # : {gpu_id}
+        
+        Sparse: {sparse}
+        
+        """
+    ),
+    {
+        "qubit_freq": mo.ui.slider(
+            start=0.5,
+            stop=10,
+            step=0.1,
+            value=1,
+            show_value=True,
+        ),
+        "g": mo.ui.number(
+            start=0.0,
+            stop=10.0,
+            step=0.001,
+            value=0.005,
+        ),
+        "J": mo.ui.number(
+            start=0.0,
+            stop=10.0,
+            step=0.01,
+            value=0.05,
+        ),
+        "chain_size": mo.ui.number(
+            start=3,
+            stop=15,
+            step=1,
+            value=5,
+        ),
+        "gate_time": mo.ui.number(
+            start=10,
+            stop=1000,
+            step=1,
+            value=25,
+        ),
+        "num_tlist": mo.ui.number(
+            start=10,
+            stop=100000,
+            step=10,
+            value=200,
+        ),
+        "num_magnus_intervals": mo.ui.number(
+            start=10,
+            stop=100000,
+            step=10,
+            value=100,
+        ),
+        "device": mo.ui.radio(
+            options=["cpu", "gpu"],
+            value="gpu",
+        ),
+        "gpu_id": mo.ui.number(start=0, stop=7, step=1, value=0),
+        "sparse": mo.ui.checkbox(value=False),
+    },
+).form()
+magnus_param_form
+```
+
+```python {.marimo hide_code="true"}
+labels = [
+    r"$P_{|0^{\otimes n}\rangle}$",
+    r"$P_{|1^{\otimes n}\rangle}$",
+    r"$P_{\rm rest}$",
+]
+with (
+    sns.plotting_context("notebook"),
+    mpl.rc_context({"mathtext.fontset": "cm"}),
+):
+    fig, ax = plt.subplots(
+        2, 1, figsize=(5, 5.5), layout="constrained", sharex=True
+    )
+    for sig, lc, ls in zip(
+        test_system.control_sigs,
+        ["xkcd:tomato red", "xkcd:pinkish orange"],
+        ["-", "--"],
+    ):
+        ax[0].plot(
+            test_magnus.tlist,
+            sig(test_magnus.tlist),
+            label=sig.name,
+            ls=ls,
+            color=lc,
+            lw=3,
+        )
+        ax[0].set(ylim=(-1, 1))
+        ax[0].set_ylabel("Amplitude")
+
+    magnus_plots = [
+        ax[1].plot(mag_tlist, pop, label=label, lw=2, color=lc, ls=ls)[0]
+        for pop, label, lc, ls in zip(
+            pops,
+            labels,
+            ["xkcd:darkish blue", "xkcd:ultramarine blue", "xkcd:water blue"],
+            ["-", "-.", ":"],
+        )
+    ]
+
+    for pop, label in zip(qutip_pops, labels):
+        ax[1].plot(
+            test_magnus.tlist,
+            pop,
+            # label=label + " (QuTiP)",
+            markevery=50,
+            marker="+",
+            lw=0,
+            color="black",
+        )
+
+    ax[1].set(
+        xlim=test_magnus.tlims,
+        xlabel="Time (ns)",
+        ylabel="Population",
+        ylim=(0, 1),
+    )
+    ax[0].set(ylim=(-0.5, 0.5))
+    ax[0].legend(
+        fontsize=15,
+        frameon=False,
+        labels=[r"$u^{x}(t)$", r"$u^{y}(t)$"],
+    )
+    patch = plt.Line2D(
+        [0],
+        [0],
+        marker="+",
+        color="k",
+        label="QuTiP",
+        markerfacecolor="k",
+        lw=0,
+        markersize=10,
+    )
+    ax[1].legend(
+        handles=[*magnus_plots, patch],
+        fontsize=10,
+        # loc="center left",
+        frameon=False,
+    )
+    infidelity = 1 - qt.expect(P1, test_states[-1])
+    fig.suptitle(f"Chain size: N={chain_size}, Error: {infidelity:.2e}")
+fig
+```
+
+```python {.marimo}
+opt_stopping_threshold = 2e-5
+max_opt_rounds = 200
+```
+
 ```python {.marimo}
 with mo.status.spinner(title="Optimizing") as _spinner:
-    for i in range(10):
-        test_x = rng.random(size=10)
+    init_x_size = 15
+    delta_x = 4
+    test_x = opt_x
+    for i in range(max_opt_rounds):
 
         def update_spinner(*, intermediate_result):
-            _spinner.update(title=f"Optimizing attempt {i}/10:")
             _spinner.update(subtitle=f"Error = {intermediate_result.fun:.3e}")
+            if intermediate_result.fun < opt_stopping_threshold:
+                raise StopIteration
 
+        _spinner.update(title=f"Optimizing attempt {i}/{max_opt_rounds}:")
         res = minimize(
             func2opt,
             test_x,
@@ -329,8 +338,40 @@ with mo.status.spinner(title="Optimizing") as _spinner:
                 # "gtol": 1e-12,
             },
         )
-        if func2opt(res.x) < 1e-3:
+        if func2opt(res.x) < opt_stopping_threshold:
             print("x: ", ", ".join(map(str, res.x)))
-            print("Error: ", func2opt(res.x))
+            print("Error: ", 1-func2opt(res.x))
             break
+        else: 
+            test_x = np.append(test_x, [0]*delta_x)
+```
+
+```python {.marimo}
+opt_x = [
+    -1.0,
+    1.0,
+    0.9974350922824032,
+    -0.259487174891993,
+    0.5769974320917829,
+    0.6116936972727001,
+    0.9915287711316176,
+    -0.08694460887357616,
+    -0.7911583126333067,
+    0.9967445328768995,
+    -1.0,
+    -0.9964463377205752,
+    0.7312398996383405,
+    0.9946622948961724,
+    -0.6946643939813275,
+    -0.6355202696419463,
+    0.3701286696978129,
+]
+```
+
+```python {.marimo}
+plt.bar(range(len(opt_x)), opt_x)
+```
+
+```python {.marimo}
+test_x
 ```

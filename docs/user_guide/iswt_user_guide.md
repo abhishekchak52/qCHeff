@@ -1,6 +1,10 @@
 # Iterative Schreiffer-Wolff Transformation (ISWT)
 
-This submodule contains the NPAD technique. Although this is the only method at the time of writing, other variants of iterative SWT may be added in the future. NPAD is an exact SWT at the level of couplings, therefore, this technique will iterate over couplings. We provide a general `ExactIterativeSWT` class interface. This interface provides the following methods:
+:::{admonition} Expert Technique
+The techniques discussed below require careful consideration of the symmetry of the quantum system under consideration. 
+:::
+
+This submodule contains the NPAD technique, which is an exact SWT at the level of couplings. We provide a general `ExactIterativeSWT` class interface. This interface provides the following methods:
 
 - `givens_rotation_matrix()`: Create the Given's rotation matrix.
 - `unitary_transformation()`: {math}`UHU^\dagger` for NPAD. May be generalized to time-dependent case.
