@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import qutip as qt
 
-from qcheff.magnus.magnus import MagnusTimeEvol
+from qcheff.magnus.magnus_time_evolution import MagnusTimeEvol
 from qcheff.magnus.pulses import ControlPulse, FourierPulse
 from qcheff.magnus.system import QuTiPSystem
 

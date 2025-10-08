@@ -1,11 +1,12 @@
 # SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT
 
-# The following function names: eye, identity, create, destroy, number, basis, projector, charge, position,
-# momentum, sigma, are essential quantum operations with definitions that follow from the literature.
-# While, for user readability and adaptability, we have used the same namespace as QuTip with these
-# functions, the code within is distinct in all cases, save when the operation is so simple and
-# universally defined mathematically that alternative syntax is impractical. 
+# The following function names: eye, identity, create, destroy, number, basis,
+# projector, charge, position, momentum, sigma, are essential quantum operations
+# with definitions that follow from the literature. While, for user readability
+# and adaptability, we have used the same namespace as QuTip with these functions,
+# the code within is distinct in all cases, save when the operation is so simple
+# and universally defined mathematically that alternative syntax is impractical.
 
 from qcheff import qcheff_config
 
@@ -15,13 +16,10 @@ def eye(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
+    """Identity operator in sparse/dense format
 
-    Identity operator in sparse/dense format
-
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     n: int
         dimension of the Hilbert space
 
@@ -34,7 +32,6 @@ def eye(
         If None, return the default format.
 
     """
-
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -55,8 +52,7 @@ def create(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Creation operator in sparse/dense format.
+    """Creation operator in sparse/dense format.
 
     Parameters
     ----------
@@ -72,8 +68,8 @@ def create(
     -------
     OperatorMatrix
         The creation operator.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -97,8 +93,7 @@ def destroy(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Destruction operator in sparse/dense format.
+    """Destruction operator in sparse/dense format.
 
     Parameters
     ----------
@@ -114,8 +109,8 @@ def destroy(
     -------
     OperatorMatrix
         The destruction operator.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -143,8 +138,7 @@ def number(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Number operator in sparse/dense format
+    """Number operator in sparse/dense format
 
     Parameters
     ----------
@@ -160,8 +154,8 @@ def number(
     -------
     OperatorMatrix
         The number operator.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -185,8 +179,7 @@ def identity(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Identity operator in sparse/dense format.
+    """Identity operator in sparse/dense format.
 
     Parameters
     ----------
@@ -202,8 +195,8 @@ def identity(
     -------
     OperatorMatrix
         The identity operator.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -225,8 +218,7 @@ def basis(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Basis vector in sparse/dense format.
+    """Basis vector in sparse/dense format.
 
     Parameters
     ----------
@@ -245,8 +237,8 @@ def basis(
     -------
     OperatorMatrix
         The basis vector.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -272,8 +264,7 @@ def projector(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Projector operator in sparse/dense format
+    """Projector operator in sparse/dense format
 
     Parameters
     ----------
@@ -289,8 +280,8 @@ def projector(
     sparse : bool | None, optional
         If True, return a sparse operator. If False, return a dense operator.
         If None, return the default format. By default None
-    """
 
+    """
     return (
         basis(n, i, dtype=dtype, sparse=sparse)
         @ basis(n, j, dtype=dtype, sparse=sparse).T.conj()
@@ -302,8 +293,7 @@ def charge(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Charge operator in sparse/dense format
+    """Charge operator in sparse/dense format
 
     Parameters
     ----------
@@ -321,7 +311,6 @@ def charge(
         The charge operator.
 
     """
-
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -345,8 +334,7 @@ def position(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Position operator in sparse/dense format
+    """Position operator in sparse/dense format
 
     Parameters
     ----------
@@ -362,8 +350,8 @@ def position(
     -------
     OperatorMatrix
         The position operator
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -385,8 +373,7 @@ def momentum(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Momentum operator in sparse/dense format
+    """Momentum operator in sparse/dense format
 
     Parameters
     ----------
@@ -402,8 +389,8 @@ def momentum(
     -------
     OperatorMatrix
         The momentum operator
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -426,8 +413,7 @@ def sigmax(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Pauli-X operator in sparse/dense format
+    """Pauli-X operator in sparse/dense format
 
     Parameters
     ----------
@@ -442,8 +428,8 @@ def sigmax(
     -------
     OperatorMatrix
         The Pauli-X operator
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -469,8 +455,7 @@ def sigmay(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Pauli-Y operator in sparse/dense format.
+    """Pauli-Y operator in sparse/dense format.
 
     Parameters
     ----------
@@ -485,8 +470,8 @@ def sigmay(
     -------
     OperatorMatrix
         The Pauli-Y operator
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -512,13 +497,10 @@ def sigmaz(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
+    """Pauli-Z operator in sparse/dense format
 
-    Pauli-Z operator in sparse/dense format
-
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     dtype: Type | None
         Data type of the operator.
         If None, use the default data type.
@@ -528,7 +510,6 @@ def sigmaz(
         If None, return the default format.
 
     """
-
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -553,8 +534,7 @@ def sigmap(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Raising operator in sparse/dense format
+    """Raising operator in sparse/dense format
 
     Parameters
     ----------
@@ -569,8 +549,8 @@ def sigmap(
     -------
     OperatorMatrix
         The raising operator.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 
@@ -596,8 +576,7 @@ def sigmam(
     dtype: type | None = None,
     sparse: bool | None = None,
 ):
-    """
-    Lowering operator in sparse/dense format.
+    """Lowering operator in sparse/dense format.
 
     Parameters
     ----------
@@ -612,8 +591,8 @@ def sigmam(
     -------
     OperatorMatrix
         The lowering operator.
-    """
 
+    """
     if dtype is None:
         dtype = qcheff_config.default_dtype
 

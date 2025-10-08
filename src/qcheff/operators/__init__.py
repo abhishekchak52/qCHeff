@@ -1,3 +1,5 @@
+from typing import TypeAlias
+
 from qcheff.operators.dense_operator import DenseOperator
 from qcheff.operators.operator_base import (
     OperatorMatrix,
@@ -9,10 +11,11 @@ from qcheff.operators.operators import *  # noqa: F403
 from qcheff.operators.sparse_operator import SparseOperator
 from qcheff.operators.utils import *  # noqa: F403
 
+qcheffOperatorMatrix: TypeAlias = SparseOperator | DenseOperator
 
-def qcheffOperator(op: qcheff_array) -> OperatorMatrix:
-    """
-    Create an OperatorMatrix object from a given operator.
+
+def qcheffOperator(op: qcheff_array) -> qcheffOperatorMatrix:
+    """Create an OperatorMatrix object from a given operator.
 
     Parameters
     ----------
@@ -23,6 +26,7 @@ def qcheffOperator(op: qcheff_array) -> OperatorMatrix:
     -------
     OperatorMatrix
         The created OperatorMatrix object.
+
     """
     if isinstance(op, qcheff_sparse_array):
         return SparseOperator(op)

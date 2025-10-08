@@ -35,8 +35,7 @@ global_ntrunc = data["global_parameters"]["global_ntrunc"]
 # Used to sync the GPU after running a function
 ##############################################################################
 def sync_wrapper(func, *args, **kwargs):
-    """
-    Synchronizes the GPU after running the function.
+    """Synchronizes the GPU after running the function.
     """
     res = func(*args, **kwargs)
     cp.cuda.Device().synchronize()

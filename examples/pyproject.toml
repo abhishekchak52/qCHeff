@@ -1,0 +1,31 @@
+[project]
+authors = [{name = "Abhishek Chakraborty", email = "abhishekchak52@gmail.com"}]
+name = "qcheff-examples"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">= 3.11"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.8.11,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+qcheff = { path = "..", editable = true, extras = ["models"] }
+joblib = ">=1.5.1,<2"
+marimo = ">=0.15.0,<0.17"
+seaborn = ">=0.13.2,<0.14"
+polars = ">=1.32.3,<2"
+pandas = ">=2.3.1,<3"
+ipykernel = ">=6.30.1,<7"
+ruff = ">=0.12.9,<0.14"
+
+[tool.pixi.tasks]
+me ="marimo edit --headless"
+
+[tool.pixi.dependencies]
+cupy = ">=13.5.1,<14"

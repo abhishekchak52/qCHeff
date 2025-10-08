@@ -67,10 +67,8 @@ def test_set_invalid_key():
 
 
 def test_list_options():
+    """Test that calling list_options() on the _QCHeffConfig object doesn't raise an error.
     """
-    Test that calling list_options() on the _QCHeffConfig object doesn't raise an error.
-    """
-
     config = _QCHeffConfig()
     config.list_options()  # This should print the options without raising an error
 
@@ -79,8 +77,7 @@ def test_list_options():
 @pytest.mark.parametrize("sparsity", ["sparse", "dense"])
 @pytest.mark.parametrize("dtype", dtypes)
 def test_temp_config(backend, sparsity, dtype):
-    """
-    Test that the context manager correctly sets and resets the configuration
+    """Test that the context manager correctly sets and resets the configuration
     of the qcheff_config object.
 
     The test sets the backend, sparse, and default_dtype options, and checks
@@ -106,8 +103,7 @@ def test_temp_config(backend, sparsity, dtype):
 @pytest.mark.parametrize("sparse", [True, False])
 @pytest.mark.parametrize("dtype", dtypes)
 def test_temp_config_restore_on_exception(backend, sparse, dtype):
-    """
-    Test that the context manager restores the original values
+    """Test that the context manager restores the original values
     of the qcheff_config object even if an exception is raised
     inside the context.
     """

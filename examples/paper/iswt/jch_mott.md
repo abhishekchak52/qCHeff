@@ -4,11 +4,11 @@ marimo-version: 0.8.3
 width: medium
 ---
 
-```{.python.marimo}
-from qcheff.jaynes_cummings_hubbard.models import JCHModel
+```python {.marimo}
+from qcheff.models.jaynes_cummings_hubbard.models import JCHModel
 ```
 
-```{.python.marimo}
+```python {.marimo hide_code="true"}
 jch_param_form = mo.ui.batch(
     mo.md(
         r"""
@@ -69,7 +69,11 @@ jch_param_form = mo.ui.batch(
 jch_param_form
 ```
 
-```{.python.marimo}
+```python {.marimo}
+jch_param_form.value
+```
+
+```python {.marimo}
 def models_gen(**kwargs):
     g = kwargs.get("g", 0.01)
     kappa = kwargs.get("kappa", 0.00)
@@ -93,19 +97,19 @@ def models_gen(**kwargs):
     )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 JCHModel(**jch_param_form.value)
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_model = next(models_gen(**jch_param_form.value))
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_hs = test_model.jch_scqubits_hilbertspace()
 ```
 
-```{.python.marimo}
+```python {.marimo}
 detuning_list = np.linspace(0.1, 1, 101)
 detuning_dict = {"detuning": detuning_list}
 
@@ -127,7 +131,7 @@ jch_paramsweep = scq.ParameterSweep(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 A_jc_evals = (
     (
         pl.DataFrame(
@@ -166,7 +170,7 @@ A_jc_evals = (
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 sns.lineplot(
     A_jc_evals.filter(
         (pl.col("q0") == "1") & (pl.col("r1") == "0") & (pl.col("q1") == "0")
@@ -177,7 +181,7 @@ sns.lineplot(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mott_df = (
     A_jc_evals.filter(
         (pl.col("q0") == "1") & (pl.col("r1") == "0") & (pl.col("q1") == "0")
@@ -214,11 +218,11 @@ mott_df = (
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 test_model.g
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mott_ax = sns.lineplot(
     mott_df, x="detuning", y="mu_critical", hue="level_pair"
 )
@@ -226,15 +230,15 @@ mott_ax = sns.lineplot(
 mott_ax
 ```
 
-```{.python.marimo}
+```python {.marimo}
 
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mott_df
 ```
 
-```{.python.marimo}
+```python {.marimo}
 pl.DataFrame(
     [
         {
@@ -247,11 +251,11 @@ pl.DataFrame(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 
 ```
 
-```{.python.marimo}
+```python {.marimo}
 subsys_A_labels = [
     # ground
     (0, 0, 0, 0),
@@ -275,7 +279,7 @@ subsys_B_labels = [
 ]
 ```
 
-```{.python.marimo}
+```python {.marimo}
 mo.mpl.interactive(
     sns.relplot(
         A_jc_evals,
@@ -288,24 +292,22 @@ mo.mpl.interactive(
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 plt.imshow(
     np.abs(test_hs.hamiltonian()[:]), cmap="binary", norm=mpl.colors.LogNorm()
 )
 ```
 
-```{.python.marimo}
+```python {.marimo}
 import cupyx
 from tqdm.notebook import tqdm
 import itertools
 import more_itertools
 from time import sleep
-from qcheff.operators.operator_base import qcheffOperator
-from qcheff.iswt.iswt import NPAD
+from qcheff.operators import qcheffOperator
 import numpy as np
 import matplotlib.pyplot as plt
 import polars as pl
-import plotly.express as px
 import cupy as cp
 import marimo as mo
 import scqubits as scq

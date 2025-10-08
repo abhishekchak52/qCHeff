@@ -11,8 +11,7 @@ __all__ = ["FourierPulse"]
 
 
 def cos_ramp(t, a=0.2):
-    """
-    Compute a cosine ramp function.
+    """Compute a cosine ramp function.
 
     Parameters
     ----------
@@ -25,6 +24,7 @@ def cos_ramp(t, a=0.2):
     -------
     array_like
         Cosine ramp function values.
+
     """
     xp = cp.get_array_module(t)
 
@@ -45,8 +45,7 @@ def cos_ramp(t, a=0.2):
 
 @dataclass(kw_only=True)
 class ControlPulse:
-    """
-    Defines a control pulse.
+    """Defines a control pulse.
 
     Contains an envelope in the form of PulseEnvelope or a derived class,
     carrier frequency and phase. The amplitude is assumed to be 1 if unspecified.
@@ -75,6 +74,7 @@ class ControlPulse:
     ------
     ValueError
         If the lengths of coeffs and basis_funcs are not the same.
+
     """
 
     coeffs: list[float]
@@ -91,8 +91,7 @@ class ControlPulse:
         self.name = name
 
     def envelope(self, tlist):
-        """
-        Generates a pulse array given a timelist.
+        """Generates a pulse array given a timelist.
 
         Parameters
         ----------
@@ -103,6 +102,7 @@ class ControlPulse:
         -------
         array_like
             Pulse array.
+
         """
         pulse_array = sum(
             coeff * basis_func(tlist)
@@ -111,8 +111,7 @@ class ControlPulse:
         return pulse_array
 
     def __call__(self, tlist):
-        """
-        Generates a pulse array given a timelist.
+        """Generates a pulse array given a timelist.
 
         Parameters
         ----------
@@ -123,6 +122,7 @@ class ControlPulse:
         -------
         array_like
             Pulse array.
+
         """
         xp = cp.get_array_module(tlist)
         pulse_array = (
@@ -134,8 +134,7 @@ class ControlPulse:
 
 
 class FourierPulse(ControlPulse):
-    """
-    Pulse in the modulated Fourier basis.
+    """Pulse in the modulated Fourier basis.
     This creates a Pulse with the basis functions given in the Fourier basis.
 
     The basis functions are:
@@ -159,11 +158,11 @@ class FourierPulse(ControlPulse):
         "cpu" or "gpu". Default is "cpu".
     **kwargs : dict
         Additional keyword arguments to pass to ControlPulse.
+
     """
 
     def __init__(self, coeffs, gate_time, ramp_ratio=0.2, backend="cpu", **kwargs):
-        """
-        Initializes a FourierPulse object.
+        """Initializes a FourierPulse object.
 
         Parameters
         ----------
@@ -177,6 +176,7 @@ class FourierPulse(ControlPulse):
             "cpu" or "gpu". Default is "cpu".
         **kwargs : dict
             Additional keyword arguments to pass to ControlPulse.
+
         """
 
         def ramp(t):
@@ -196,8 +196,7 @@ class FourierPulse(ControlPulse):
         self.gate_time = gate_time
 
     def envelope(self, tlist):
-        """
-        Generates a pulse array given a timelist.
+        """Generates a pulse array given a timelist.
 
         Parameters
         ----------
@@ -208,12 +207,12 @@ class FourierPulse(ControlPulse):
         -------
         array_like
             Pulse array.
+
         """
         return super().envelope(tlist)
 
     def __call__(self, tlist):
-        """
-        Generates a pulse array given a timelist.
+        """Generates a pulse array given a timelist.
 
         Parameters
         ----------
@@ -224,6 +223,7 @@ class FourierPulse(ControlPulse):
         -------
         array_like
             Pulse array.
+
         """
         pulse_array = super().__call__(tlist)
         return pulse_array

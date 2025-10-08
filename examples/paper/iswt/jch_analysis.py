@@ -1,22 +1,18 @@
 import marimo
 
-__generated_with = "0.8.3"
+__generated_with = "0.15.0"
 app = marimo.App(width="medium")
 
 
 @app.cell
-def __():
-    from qcheff.jaynes_cummings_hubbard.models import (
-        JCHModel,
-        jch_scqubits_hilbertspace,
-    )
-    from qcheff.jaynes_cummings_hubbard.utils import JCHAnalysis
-
-    return JCHAnalysis, JCHModel, jch_scqubits_hilbertspace
+def _():
+    from qcheff.models.jaynes_cummings_hubbard.models import JCHModel
+    from qcheff.models.jaynes_cummings_hubbard.utils import JCHAnalysis
+    return JCHAnalysis, JCHModel
 
 
 @app.cell
-def __(mo):
+def _(mo):
     jch_param_form = mo.ui.batch(
         mo.md(
             r"""
@@ -85,7 +81,7 @@ def __(mo):
 
 
 @app.cell
-def __(JCHModel, copy, np):
+def _(JCHModel, copy, np):
     def models_gen(form_data: dict):
         model_params_in_form = ["wq_range", "g", "kappa", "nr", "n"]
         delta_range = np.linspace(*form_data["delta"], form_data["ndelta"])
@@ -97,12 +93,11 @@ def __(JCHModel, copy, np):
                 if key in model_params_in_form
             }
             yield JCHModel(**(model_param_dict | {"delta": float(delta)}))
-
     return (models_gen,)
 
 
 @app.cell
-def __(itertools, repeat, test_model):
+def _(itertools, repeat, test_model):
     test_levels = list(
         map(
             tuple,
@@ -119,59 +114,49 @@ def __(itertools, repeat, test_model):
 
 
 @app.cell
-def __(jch_param_form, models_gen):
+def _(jch_param_form, models_gen):
     test_model = next(models_gen(jch_param_form.value))
     return (test_model,)
 
 
 @app.cell
-def __(jch_scqubits_hilbertspace, test_model):
+def _(jch_scqubits_hilbertspace, test_model):
     test_hs = jch_scqubits_hilbertspace(test_model)
     return (test_hs,)
 
 
 @app.cell
-def __():
+def _():
     import itertools
-
     return (itertools,)
 
 
 @app.cell
-def __():
+def _():
     import scqubits as scq
-
-    return (scq,)
+    return
 
 
 @app.cell
-def __(test_hs):
+def _(test_hs):
     test_ham = test_hs.hamiltonian()[:]
-    return (test_ham,)
+    return
 
 
 @app.cell
-def __():
+def _():
     import more_itertools
-
-    return (more_itertools,)
+    return
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""# Testing accuracy""")
+    return
 
 
 @app.cell
-def __(
-    JCHAnalysis,
-    itertools,
-    jch_param_form,
-    mo,
-    models_gen,
-    pl,
-    test_levels,
-):
+def _(JCHAnalysis, itertools, jch_param_form, mo, models_gen, pl, test_levels):
     data_df = pl.concat(
         mo.status.progress_bar(
             itertools.chain(
@@ -194,16 +179,14 @@ def __(
 
 
 @app.cell
-def __(data_df, pl):
+def _(data_df, pl):
     zz_df = (
         data_df.pivot(
             on="state",
             values="energy",
         )
         .with_columns(
-            (pl.col("1100") + pl.col("0000") - pl.col("1000") - pl.col("0100")).alias(
-                "ZZ"
-            )
+            (pl.col("1100") + pl.col("0000") - pl.col("1000") - pl.col("0100")).alias("ZZ")
         )
         .pivot(
             on="Method",
@@ -227,7 +210,7 @@ def __(data_df, pl):
 
 
 @app.cell
-def __(pl, plt, sns, zz_df, zz_error_df):
+def _(pl, plt, sns, zz_df, zz_error_df):
     with sns.plotting_context("paper"):
         zz_fig, zz_ax = plt.subplots(2, 1, sharex=True, figsize=(4, 7))
         zz_plot = sns.lineplot(
@@ -284,11 +267,11 @@ def __(pl, plt, sns, zz_df, zz_error_df):
         )
         sns.despine(fig=zz_fig)
     zz_fig
-    return zz_ax, zz_err_plot, zz_fig, zz_plot
+    return
 
 
 @app.cell
-def __():
+def _():
     from copy import copy
     from itertools import product
     from time import sleep
@@ -301,37 +284,15 @@ def __():
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     import numpy as np
-    import plotly.express as px
     import polars as pl
     import qutip as qt
     import scipy.sparse as spsparse
     import seaborn as sns
     from tqdm.notebook import tqdm
 
-    from qcheff.iswt.iswt import NPAD
-    from qcheff.operators.operator_base import qcheffOperator
-
-    return (
-        NPAD,
-        copy,
-        cp,
-        cpla,
-        cpsparse,
-        cupyx,
-        mo,
-        mpl,
-        np,
-        pl,
-        plt,
-        product,
-        px,
-        qcheffOperator,
-        qt,
-        sleep,
-        sns,
-        spsparse,
-        tqdm,
-    )
+    from qcheff.iswt import NPAD
+    from qcheff.operators import qcheffOperator
+    return copy, mo, np, pl, plt, sns
 
 
 if __name__ == "__main__":

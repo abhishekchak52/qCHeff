@@ -9,8 +9,7 @@ from qcheff.operators import OperatorMatrix, SparseOperator
 
 
 def NPAD(hamiltonian: OperatorMatrix, **kwargs) -> ExactIterativeSWT:
-    """
-    Construct an NPAD object from an OperatorMatrix.
+    """Construct an NPAD object from an OperatorMatrix.
 
     Parameters
     ----------
@@ -28,9 +27,11 @@ def NPAD(hamiltonian: OperatorMatrix, **kwargs) -> ExactIterativeSWT:
 
     Notes
     -----
-    The backend of the input operator is determined using `cupyx.scipy.get_array_module`.
-    If the backend is "scipy", NPADScipySparse is used. If the backend is "cupyx.scipy",
+    The backend of the input operator is determined using
+    `cupyx.scipy.get_array_module`. If the backend is "scipy",
+    NPADScipySparse is used. If the backend is "cupyx.scipy",
     NPADCupySparse is used. Otherwise, a NotImplementedError is raised.
+
     """
     backend_module = cupyx.scipy.get_array_module(hamiltonian.op).__name__
     # Convert the operator to a SparseOperator for efficiency

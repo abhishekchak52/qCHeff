@@ -3,18 +3,18 @@ from collections.abc import Sequence
 import cupyx.scipy.sparse as cpsparse
 import scipy.sparse as spsparse
 
-from qcheff.magnus.magnus import MagnusTimeEvolDense, MagnusTimeEvolSparseLazy
-from qcheff.operators.operator_base import OperatorMatrix, qcheff_array
+from qcheff.magnus.magnus_time_evolution import MagnusTimeEvolDense, MagnusTimeEvolSparseLazy
+from qcheff.operators import qcheffOperatorMatrix
+from qcheff.operators.operator_base import qcheff_array
 
 
 def magnus(
     tlist: qcheff_array,
-    drift_ham: OperatorMatrix,
+    drift_ham: qcheffOperatorMatrix,
     control_sigs: qcheff_array,
-    control_hams: Sequence[OperatorMatrix],
+    control_hams: Sequence[qcheffOperatorMatrix],
 ):
-    """
-    Dispatch Magnus to the appropriate backend based on device of the given array.
+    """Dispatch Magnus to the appropriate backend based on device of the given array.
 
     Parameters
     ----------
@@ -32,14 +32,14 @@ def magnus(
     magnus_class : MagnusTimeEvolDense or MagnusTimeEvolSparseLazy
         An instance of the appropriate Magnus class based on the sparsity of the drift \
         Hamiltonian.
-    """
 
+    """
     _is_sparse = cpsparse.issparse(drift_ham.op) or spsparse.issparse(drift_ham.op)
     magnus_class = MagnusTimeEvolSparseLazy if _is_sparse else MagnusTimeEvolDense
 
     return magnus_class(
         tlist=tlist,
-        drift_ham=drift_ham, # type: ignore
+        drift_ham=drift_ham,  # type: ignore
         control_sigs=control_sigs,
-        control_hams=control_hams, # type: ignore
+        control_hams=control_hams,  # type: ignore
     )

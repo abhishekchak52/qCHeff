@@ -12,15 +12,13 @@ import scipy.sparse as spsparse
 
 from qcheff.operators.operator_base import (
     OperatorMatrix,
-    qcheff_array,
     qcheff_dense_array,
 )
 
 
 @dataclass
 class DenseOperator(OperatorMatrix):
-    """
-    A dense matrix operator.
+    """A dense matrix operator.
 
     Parameters
     ----------
@@ -45,8 +43,7 @@ class DenseOperator(OperatorMatrix):
     def __post_init__(
         self,
     ):
-        """
-        Initialize the operator.
+        """Initialize the operator.
 
         Notes
         -----
@@ -59,8 +56,7 @@ class DenseOperator(OperatorMatrix):
             self.op = self.op.toarray()
 
     def save(self, filename: str) -> None:
-        """
-        Save the operator to a file.
+        """Save the operator to a file.
 
         Parameters
         ----------
@@ -72,8 +68,7 @@ class DenseOperator(OperatorMatrix):
 
     @classmethod
     def load(cls, filename: str) -> "DenseOperator":
-        """
-        Load an operator from a file.
+        """Load an operator from a file.
 
         Parameters
         ----------
@@ -98,8 +93,7 @@ class DenseOperator(OperatorMatrix):
         return cls(op=data["op"])
 
     def to(self, backend: str) -> None:
-        """
-        Convert the operator to a different backend.
+        """Convert the operator to a different backend.
 
         Parameters
         ----------
@@ -131,8 +125,7 @@ class DenseOperator(OperatorMatrix):
         self.backend_module = cp.get_array_module(self.op)
 
     def diagonals(self) -> qcheff_dense_array:
-        """
-        Return the diagonal elements of the operator.
+        """Return the diagonal elements of the operator.
 
         Returns
         -------
@@ -143,8 +136,7 @@ class DenseOperator(OperatorMatrix):
         return self.op.diagonal()
 
     def couplings(self) -> qcheff_dense_array:
-        """
-        Return the upper triangular elements of the operator.
+        """Return the upper triangular elements of the operator.
 
         Returns
         -------
@@ -153,4 +145,3 @@ class DenseOperator(OperatorMatrix):
 
         """
         return np.triu(self.op, k=1)
-

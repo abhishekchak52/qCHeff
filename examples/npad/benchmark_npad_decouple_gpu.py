@@ -48,12 +48,10 @@ def run_gpu(**kwargs):
 @pytest.mark.skip("Slow and fails to converge for large matrices.")
 @pytest.mark.parametrize("chain_size", chain_size_list)
 def test_npad_decouple_gpu(benchmark, chain_size):
-    """
-    Sets up a chain of Duffing Oscillators, and then decouples the qubit chain subspace.
+    """Sets up a chain of Duffing Oscillators, and then decouples the qubit chain subspace.
 
 
     """
-
     data_ham, incl_idx, excl_idx = gen_decouple_data_warmup(chain_size)
 
     kwarg_dict = {
@@ -82,12 +80,10 @@ def test_npad_decouple_gpu(benchmark, chain_size):
 @pytest.mark.parametrize("chain_size", chain_size_list)
 @pytest.mark.parametrize("batch_size", batch_size_list)
 def test_npad_decouple_iteration_speed_gpu(benchmark, chain_size, batch_size):
-    """
-    Sets up a chain of Duffing Oscillators, and then decouples the qubit chain subspace.
+    """Sets up a chain of Duffing Oscillators, and then decouples the qubit chain subspace.
 
 
     """
-
     data_ham, incl_idx, excl_idx = gen_decouple_data_warmup(chain_size)
 
     kwarg_dict = {

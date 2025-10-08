@@ -59,9 +59,7 @@ class JCMottAnalysis:
     level_labels: list
 
     def benchmark(self, **kwargs):
-        """
-        Benchmarks the Mott Analysis using the specified methods.
-        """
+        """Benchmarks the Mott Analysis using the specified methods."""
         test_ham = self.model.jc_scqubits_hilbertspace().hamiltonian()[:]
 
         test_NPAD_cupy = NPADCupySparse(
@@ -107,9 +105,7 @@ class JCMottAnalysis:
         )
 
     def analyse(self, methods=None, detuning_list=None, **kwargs):
-        """
-        Analyzes the Jaynes-Cummings model and returns the eigenvalues of the system.
-        """
+        """Analyzes the JC model and returns the eigenvalues of the system."""
         if methods is None:
             methods = ["scqubits", "npad_cpu", "npad_gpu"]
 
@@ -123,8 +119,7 @@ class JCMottAnalysis:
                 yield getattr(self, f"{method}_eigvals")(**kwargs)
 
     def scqubits_eigvals(self):
-        """
-        Returns the desired eigenvalues of a Jaynes-Cummings model using SCQubits.
+        """Returns the desired eigenvalues of a Jaynes-Cummings model using SCQubits.
 
         Energies are returned as a Polars series.
         """
@@ -148,12 +143,10 @@ class JCMottAnalysis:
         )
 
     def npad_cpu_eigvals(self):
-        """
-        Returns the desired eigenvalues of a Jaynes-Cummings model using NPAD.
+        """Returns the desired eigenvalues of a Jaynes-Cummings model using NPAD.
 
         Energies are returned as an array of floats.
         """
-
         test_NPAD = NPAD(
             qcheffOperator(
                 spsparse.csr_array(
@@ -192,8 +185,7 @@ class JCMottAnalysis:
         )
 
     def npad_gpu_eigvals(self):
-        """
-        Returns the desired eigenvalues of a
+        """Returns the desired eigenvalues of a
 
         Jaynes-Cummings model using NPAD.
         """

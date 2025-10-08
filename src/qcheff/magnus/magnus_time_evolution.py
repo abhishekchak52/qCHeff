@@ -11,16 +11,16 @@ import numpy as np
 import scipy.linalg as la
 
 from qcheff.magnus.utils_gpu import expm_taylor
-from qcheff.operators import OperatorMatrix, qcheff_array
+from qcheff.operators import qcheff_array, qcheffOperatorMatrix
 from qcheff.operators.sparse_operator import SparseOperator
 
 
 @dataclass(kw_only=True)
 class MagnusTimeEvol:
     tlist: qcheff_array
-    drift_ham: OperatorMatrix
+    drift_ham: qcheffOperatorMatrix
     control_sigs: qcheff_array
-    control_hams: Sequence[OperatorMatrix]
+    control_hams: Sequence[qcheffOperatorMatrix]
     dims: tuple[int, int] = field(init=False)
     dt: float = field(init=False)
     tlims: tuple[float, float] = field(init=False)
@@ -52,8 +52,7 @@ class MagnusTimeEvol:
         )
 
     def update_control_sigs(self, control_sigs: qcheff_array) -> None:
-        """
-        Update the control_sigs array.
+        """Update the control_sigs array.
 
         Parameters
         ----------
@@ -65,6 +64,7 @@ class MagnusTimeEvol:
         ------
         ValueError
             If the shape of the new array does not match the current array.
+
         """
         if control_sigs.shape != self.control_sigs.shape:
             msg = f"The new control_sigs array must have the \
@@ -93,8 +93,7 @@ class MagnusTimeEvol:
         init_state: qcheff_array,
         **kwargs,
     ) -> Generator[qcheff_array, None, None]:
-        """
-        Evolve the initial state using the Magnus expansion.
+        """Evolve the initial state using the Magnus expansion.
 
         Parameters
         ----------
@@ -107,6 +106,7 @@ class MagnusTimeEvol:
         ------
         qcheff_array
             The state at the end of each interval.
+
         """
         xp = cp.get_array_module(self.drift_ham.op)
         current_state = np.ravel(xp.asarray(init_state))  # Forces a copy
@@ -119,7 +119,7 @@ class MagnusTimeEvol:
 class MagnusTimeEvolDense(MagnusTimeEvol):
     def magnus_hamiltonians(
         self,
-        **kwargs,
+        **kwargs
     ) -> qcheff_array:
         """
         Compute the Magnus Hamiltonians.
@@ -139,19 +139,13 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
         ValueError
             If both or neither of num_intervals and points_per_interval are provided.
         """
-        _num_intervals = kwargs.get("num_intervals", None)
+        _num_intervals = kwargs.get("num_intervals", self.tlist.shape[0])
         _points_per_interval = kwargs.get("points_per_interval", None)
 
-        if bool(_num_intervals) == bool(_points_per_interval):  # XOR
-            msg = "Either num_intervals or points_per_interval must be provided."
-            raise ValueError(msg)
-        elif _num_intervals is not None:
-            _points_per_interval = int(np.ceil(len(self.tlist) / _num_intervals))
-        elif _points_per_interval is not None:
+        if _points_per_interval is not None:
             _num_intervals = int(np.ceil(len(self.tlist) / _points_per_interval))
         else:
-            msg = "Something went wrong."
-            raise ValueError(msg)
+            _points_per_interval = int(np.ceil(len(self.tlist) / _num_intervals))
         # First, check if hamiltonians have already been computed.
         # If they have, check if the dimensions are commensurate with
         # the number of intervals and points per interval.
@@ -171,7 +165,11 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
         control_ham_arr = xp.array([x.op for x in self.control_hams])
         magnus1_ctrl_coeffs = (
             self.control_sigs.reshape(
-                (self.num_controls, _num_intervals, _points_per_interval)
+                (
+                    self.num_controls,
+                    _num_intervals,
+                    _points_per_interval,
+                )
             )
             .sum(axis=-1)
             .T
@@ -187,8 +185,7 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
         self,
         **kwargs,
     ) -> qcheff_array:
-        """
-        Compute the Magnus propagators.
+        """Compute the Magnus propagators.
 
         Parameters
         ----------
@@ -199,6 +196,7 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
         -------
         qcheff_array
             The computed Magnus propagators.
+
         """
         return (
             self.expm(-1j * self.magnus_hamiltonians(**kwargs))
@@ -209,9 +207,7 @@ class MagnusTimeEvolDense(MagnusTimeEvol):
 
 @dataclass(kw_only=True)
 class MagnusTimeEvolSparseLazy(MagnusTimeEvol):
-    """
-    Sparse version of MagnusTimeEvol. This version uses a lazy approach.
-    """
+    """Sparse version of MagnusTimeEvol. This version uses a lazy approach."""
 
     tlist: qcheff_array
     drift_ham: SparseOperator
@@ -222,8 +218,7 @@ class MagnusTimeEvolSparseLazy(MagnusTimeEvol):
         self,
         **kwargs,
     ) -> Generator[SparseOperator, None, None]:
-        """
-        Compute the Magnus Hamiltonians lazily.
+        """Compute the Magnus Hamiltonians lazily.
 
         Parameters
         ----------
@@ -239,6 +234,7 @@ class MagnusTimeEvolSparseLazy(MagnusTimeEvol):
         ------
         ValueError
             If both or neither of num_intervals and points_per_interval are provided.
+
         """
         _num_intervals = kwargs.get("num_intervals", None)
         _points_per_interval = kwargs.get("points_per_interval", None)
@@ -275,8 +271,7 @@ class MagnusTimeEvolSparseLazy(MagnusTimeEvol):
         self,
         **kwargs,
     ) -> Generator[qcheff_array, None, None]:
-        """
-        Compute the Magnus propagators lazily.
+        """Compute the Magnus propagators lazily.
 
         Parameters
         ----------
@@ -287,6 +282,7 @@ class MagnusTimeEvolSparseLazy(MagnusTimeEvol):
         ------
         qcheff_array
             The computed Magnus propagators.
+
         """
         for magnus_interval_ham in self.magnus_hamiltonians(**kwargs):
             # Since there is no sparse version for expm, we use the dense version
